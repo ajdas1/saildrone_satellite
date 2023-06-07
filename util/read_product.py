@@ -1,4 +1,13 @@
+
 import xarray as xr
+
+from enum import Enum
+
+
+
+class DS(Enum):
+
+    ASCAT = "ASCAT"
 
 
 
@@ -71,3 +80,6 @@ def read_SARAL(filename: str) -> xr.DataArray:
 
 
     return data
+
+
+
