@@ -5,6 +5,8 @@ import pandas as pd
 import shapely as shp
 import xarray as xr
 
+from file_check import fetch_repo_path
+
 # import file_check
 # importlib.reload(file_check)
 # from file_check import check_for_product
@@ -18,19 +20,18 @@ import xarray as xr
 # from plotting import plot_swath, set_cartopy_projection, proj
 
 
-def write_shapefile(data: gpd.GeoDataFrame, filedir: str, filename: str = "shapefile.shp"): 
+def write_shapefile(data: gpd.GeoDataFrame, product: str, filename: str): 
+    path = fetch_repo_path()
+    swath_path = f"{path}/data_shapefile/{product}/{filename.split('/')[-1][:-3]}"
+
 
     data.StartTime = data.StartTime.astype(str)
     data.EndTime = data.EndTime.astype(str)
-    # data.to_file(filename)
 
-    if os.path.isdir(filedir):
-        fls = os.listdir(filedir)
-        _ = [os.remove(f"{filedir}/{fl}" for fl in fls)]
-    else:
-        os.mkdir(filedir)
+    if not os.path.isdir(swath_path):
+        os.mkdir(swath_path)
 
-    data.to_file(f"{filedir}/{filename}")
+    data.to_file(f"{swath_path}/shapefile.shp")
 
 
 
@@ -57,7 +58,7 @@ def create_swath_polygon_time(data: xr.DataArray) -> gpd.GeoDataFrame:
 
 
 
-def create_swath_polygon(data: xr.DataArray) -> gpd.GeoDataFrame:
+def create_swath_polygon(data: xr.DataArray, product: str) -> gpd.GeoDataFrame:
 
     data_pd = convert_data_to_points(data=data).reset_index()
     data_pd["buffered_point"] = data_pd[["lon", "lat"]].apply(point_buffer, axis=1)
@@ -66,10 +67,10 @@ def create_swath_polygon(data: xr.DataArray) -> gpd.GeoDataFrame:
     data_pd = data_pd[["point", "buffered_point"]]
 
     vals = [
-        stime, etime, 
+        product, stime, etime, 
         shp.ops.unary_union(data_pd.buffered_point.values)
     ]
-    data_gpd = pd.DataFrame([], columns=["StartTime", "EndTime", "Polygon"], index=[1])
+    data_gpd = pd.DataFrame([], columns=["Product", "StartTime", "EndTime", "Polygon"], index=[1])
     data_gpd.iloc[0] = vals
 
 

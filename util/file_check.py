@@ -29,11 +29,20 @@ def register_new_dataset(product: str):
 
 
 
-def check_for_product_data(
-        product: str, 
-        format: str = ".nc",
-        append_datadir: bool = True
-        ) -> list[str]:
+def check_for_shapefile_data(product: str, append_datadir: bool = False) -> list[str]:
+
+    path = fetch_repo_path()
+    product_path = f"{path}/data_shapefile/{product}"
+
+    if os.path.isdir(product_path):
+        files = sorted([fl for fl in os.listdir(product_path)])
+        if append_datadir:
+            files = [f"{path}/{fl}" for fl in files]
+
+        return files
+    
+
+def check_for_product_data(product: str, format: str = ".nc", append_datadir: bool = False) -> list[str]:
 
     """
     files = check_for_product(datadir: str)
@@ -47,9 +56,10 @@ def check_for_product_data(
     """
 
     path = fetch_repo_path()
+    product_path = f"{path}/data/{product}"
 
-    if os.path.isdir(f"{path}/data/{product}"):
-        files = sorted([fl for fl in os.listdir(path) if format in fl])
+    if os.path.isdir(product_path):
+        files = sorted([fl for fl in os.listdir(product_path) if format in fl])
         if append_datadir:
             files = [f"{path}/{fl}" for fl in files]
 
