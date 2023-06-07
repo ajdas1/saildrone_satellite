@@ -7,22 +7,19 @@ import xarray as xr
 
 from file_check import fetch_repo_path
 
-# import file_check
-# importlib.reload(file_check)
-# from file_check import check_for_product
+import yaml
 
-# import read_product
-# importlib.reload(read_product)
-# from read_product import read_swath
 
-# import plotting
-# importlib.reload(plotting)
-# from plotting import plot_swath, set_cartopy_projection, proj
+config_file = f"{fetch_repo_path()}/config.yaml"
+
+with open(config_file) as fl:
+    config = yaml.load(fl, Loader=yaml.FullLoader)
+
 
 
 def write_shapefile(data: gpd.GeoDataFrame, product: str, filename: str): 
     path = fetch_repo_path()
-    swath_path = f"{path}/data_shapefile/{product}/{filename.split('/')[-1][:-3]}"
+    swath_path = f"{path}/{config['shapefile_data_folder']}/{product}/{filename.split('/')[-1][:-3]}"
 
 
     data.StartTime = data.StartTime.astype(str)
@@ -39,7 +36,7 @@ def create_swath_polygon_time(data: xr.DataArray) -> gpd.GeoDataFrame:
 
     data_pd = convert_data_to_points(data=data).reset_index()
     data_pd = data_pd.drop(["NUMROWS", "NUMCELLS"], axis=1)
-    data_pd["buffered_point"] = data_pd[["lon", "lat"]].apply(point_buffer, axis=1)
+    data_pd["buffered_point"] = data_pd[["lon", "lat"]].apply(point_buffer, resolution=float(config['satellite_dataset_resolution']), axis=1)
 
     # split into individual time stamps
     time_groups = data_pd.groupby(data_pd.time)
@@ -116,37 +113,3 @@ def convert_data_to_points(data: xr.DataArray) -> pd.DataFrame:
 
 
 
-
-
-
-
-# ########### workflow
-# product = "ASCAT"
-
-# datadir = "/Users/asavarin/Desktop/work/saildrone_satellite/data"
-# savedir = "/Users/asavarin/Desktop/work/saildrone_satellite/figs/test"
-# datadir += f"/{product}"
-# files = check_for_product(datadir=datadir, format = ".nc")
-
-# # for fl in files:
-
-
-
-# fl = files[0]
-# data = read_swath(filename=f"{datadir}/{fl}", product=product)
-
-
-
-
-# import geopandas as gpd
-# import matplotlib.pyplot as plt
-
-
-
-
-
-
-
-
-
-# # buffer = multipoint.buffer(distance=12500)

@@ -1,8 +1,17 @@
 
 import xarray as xr
+import yaml
 
 from enum import Enum
 from file_check import fetch_repo_path
+
+
+
+config_file = f"{fetch_repo_path()}/config.yaml"
+
+with open(config_file) as fl:
+    config = yaml.load(fl, Loader=yaml.FullLoader)
+
 
 
 class DS(Enum):
@@ -17,7 +26,7 @@ def read_swath(filename: str, product: str) -> xr.DataArray:
 
 
     if product == DS.ASCAT.value:
-        data = read_ASCAT(filename=f"{repo_path}/data/{product}/{filename}")
+        data = read_ASCAT(filename=f"{repo_path}/{config['satellite_data_folder']}/{product}/{filename}")
     
     # elif product == DS.SARAL:
     #     data = read_SARAL(filename=filename)
