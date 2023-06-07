@@ -1,3 +1,0 @@
-from file_check import create_data_folder_structure
-
-create_data_folder_structure()
