@@ -3,6 +3,10 @@ satellite_data_folder: data_satellite
 saildrone_data_folder: data_saildrone
 shapefile_data_folder: data_shapefile
 scripts_folder: scripts
+# saildrone setup
+saildrone_year: 2022
+saildrone_number: 1040
+
 # satellite dataset setup - resolution should be rounded up
 satellite_product: ASCAT
 satellite_dataset_resolution: 0.3
@@ -10,6 +14,7 @@ satellite_dataset_resolution: 0.3
 
 
 # processing steps
-create_dir_structure: False
+create_dir_structure: True
 register_dataset: False
-convert_swath_outlines_to_shapefiles: True
+convert_saildrone_coordinates_to_shapefile: True
+convert_swath_outlines_to_shapefiles: False

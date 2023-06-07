@@ -1,23 +1,9 @@
 
-
-import file_check
-import importlib
-import read_product
-import swath_geometry
-
 from datetime import datetime
-# from datetime import datetime
-
-importlib.reload(file_check)
 from file_check import check_for_satellite_data, check_for_shapefile_data, read_config
-
-importlib.reload(read_product)
 from read_product import DS, read_swath
+from shapefile_geometry import write_shapefile, create_swath_polygon
 
-importlib.reload(swath_geometry)
-from swath_geometry import write_shapefile, create_swath_polygon
-
-import sys
 
 
 

@@ -19,12 +19,16 @@ with open(config_file) as fl:
 
 def write_shapefile(data: gpd.GeoDataFrame, product: str, filename: str): 
     path = fetch_repo_path()
-    swath_path = f"{path}/{config['shapefile_data_folder']}/{product}/{filename.split('/')[-1][:-3]}"
 
-
-    data.StartTime = data.StartTime.astype(str)
-    data.EndTime = data.EndTime.astype(str)
-
+    if product != "saildrone":
+        swath_path = f"{path}/{config['shapefile_data_folder']}/{product}/{filename.split('/')[-1][:-3]}"
+        data.StartTime = data.StartTime.astype(str)
+        data.EndTime = data.EndTime.astype(str)
+        
+    else:
+        swath_path = f"{path}/{config['saildrone_data_folder']}/shapefile/{filename.split('/')[-1][:-3]}"
+        data.Time = data.Time.astype(str)
+        
     if not os.path.isdir(swath_path):
         os.mkdir(swath_path)
 
@@ -112,4 +116,12 @@ def convert_data_to_points(data: xr.DataArray) -> pd.DataFrame:
     return data_pd
 
 
+def convert_saildrone_coordinates_to_points(data: xr.DataArray) -> gpd.GeoDataFrame:
 
+    data_pd = convert_data_to_points(data=data).reset_index()
+    data_pd = data_pd[["time", "point"]]
+    data_pd = data_pd.rename(columns={"time": "Time"})
+
+    data_gpd = gpd.GeoDataFrame(data_pd, geometry="point")
+
+    return data_gpd

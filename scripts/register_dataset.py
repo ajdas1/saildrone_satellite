@@ -1,7 +1,4 @@
 from file_check import read_config, register_new_dataset
-import importlib
-import read_product
-importlib.reload(read_product)
 from read_product import DS
 
 

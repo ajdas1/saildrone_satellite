@@ -3,20 +3,16 @@ import xarray as xr
 import yaml
 
 from enum import Enum
-from file_check import fetch_repo_path
+from file_check import fetch_repo_path, read_config
 
 
 
-config_file = f"{fetch_repo_path()}/config.yaml"
-
-with open(config_file) as fl:
-    config = yaml.load(fl, Loader=yaml.FullLoader)
-
-
+config = read_config()
 
 class DS(Enum):
 
     ASCAT = "ASCAT"
+    saildrone = "saildrone"
 
 
 
@@ -28,6 +24,9 @@ def read_swath(filename: str, product: str) -> xr.DataArray:
     if product == DS.ASCAT.value:
         data = read_ASCAT(filename=f"{repo_path}/{config['satellite_data_folder']}/{product}/{filename}")
     
+    elif product == DS.saildrone.value:
+        data = read_saildrone(filename=f"{repo_path}/{config['saildrone_data_folder']}/nc/{filename}")
+
     # elif product == DS.SARAL:
     #     data = read_SARAL(filename=filename)
     
@@ -53,6 +52,19 @@ def read_ASCAT(filename: str) -> xr.DataArray:
         
 
     return data
+
+
+
+def read_saildrone(filename: str) -> xr.DataArray:
+
+    repo_path = fetch_repo_path()
+    sd_path = f"{repo_path}/{config['saildrone_data_folder']}/nc"
+    data = xr.open_dataset(f"{sd_path}/{filename}", engine="netcdf4", mask_and_scale=True, decode_times=True, decode_coords=True)
+    data = data.rename({"latitude": "lat", "longitude": "lon"})
+    data = data.set_coords(["lat", "lon"])
+    
+    return data
+
 
 
 # def read_SARAL(filename: str) -> xr.DataArray:

@@ -21,9 +21,9 @@ import subset
 importlib.reload(subset)
 from subset import subset_files_in_time_range, subset_swath_time
 
-import swath_geometry
-importlib.reload(swath_geometry)
-from swath_geometry import write_shapefile, create_swath_polygon, create_swath_polygon_time, create_swath_multipoint
+import shapefile_geometry
+importlib.reload(shapefile_geometry)
+from shapefile_geometry import write_shapefile, create_swath_polygon, create_swath_polygon_time, create_swath_multipoint
 
 
 import matplotlib.pyplot as plt
