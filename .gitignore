@@ -1,5 +1,13 @@
 ## data files
+**/data
+**/data_shapefile
+
 **.nc
+
+**.cpg
+**.dbf
+**.shp
+**.shx
 
 ## figure files
 **.png
