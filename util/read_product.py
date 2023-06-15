@@ -98,7 +98,7 @@ def read_in_range_log(config: dict, pass_number: int) -> list:
         files = []
     return files
 
-def read_not_in_range_log(config: dict) -> list:
+def read_not_in_range_log(config: dict, pass_number: int) -> list:
     repo_path = fetch_repo_path()
     log_path = f"{repo_path}/{config['log_data_folder']}/saildrone_{config['saildrone_number']}_{config['saildrone_year']}_{config['satellite_product']}_swath_not_in_range_pass{pass_number}.txt"
 
