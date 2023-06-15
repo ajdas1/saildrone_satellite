@@ -1,40 +1,14 @@
-import os
+
 import geopandas as gpd
+import os
 import pandas as pd
 import shapely as shp
 import xarray as xr
 
 from file_check import fetch_repo_path, read_config
 
-import yaml
-
 
 config = read_config()
-
-
-def check_swath_saildrone_time_match(
-    swath_data: gpd.GeoDataFrame, saildrone_data: gpd.GeoDataFrame
-) -> gpd.GeoDataFrame:
-    """
-    match_data = check_swath_saildrone_time_match(
-        swath_data, saildrone_data
-    )
-
-    Arguments:
-    - swath data: geopandas data frame with swath shalefiles
-    - saildrone_data: geopandas data frame with saildrone shapefile
-
-    Returns:
-    - match_data column that checks if the saildrone is within the satellite
-    swath at any time during the swath passage (not necessarily when swath
-    data is overhead).
-    """
-    match_data = pd.DataFrame([])
-    match_data["time_match"] = (swath_data.StartTime >= saildrone_data.Time.min()) & (
-        swath_data.EndTime <= saildrone_data.Time.max()
-    )
-
-    return match_data
 
 
 def write_shapefile(data: gpd.GeoDataFrame, product: str, filename: str):
@@ -76,41 +50,6 @@ def write_shapefile(data: gpd.GeoDataFrame, product: str, filename: str):
     data.to_file(f"{swath_path}{os.sep}shapefile.shp")
 
 
-def create_swath_polygon_time(data: xr.DataArray, product: str) -> gpd.GeoDataFrame:
-    """
-    data = create_swath_polygon_time(data, product)
-
-    Arguments:
-    - data: xarray coordinate data array
-    - product: from which the data comes
-
-    Returns:
-    - data: a geopandas data frame with polygon geometry for the swath.
-    """
-    data_pd = convert_data_to_points(data=data, product=product).reset_index()
-    data_pd = data_pd.drop(["NUMROWS", "NUMCELLS"], axis=1)
-    data_pd["Buffered_point"] = data_pd[["lon", "lat"]].apply(
-        point_buffer, resolution=float(config["satellite_dataset_resolution"]), axis=1
-    )
-
-    # split into individual time stamps
-    time_groups = data_pd.groupby(data_pd.time)
-    time_subgroups = [time_groups.get_group(x) for x in time_groups.groups]
-
-    data_gpd = pd.DataFrame(
-        [], columns=["Time", "Points", "Polygon"], index=range(len(time_subgroups))
-    )
-    for num, el in enumerate(time_subgroups):
-        tmp = []
-        tmp.append(el.time.iloc[0])
-        tmp.append(shp.MultiPoint(points=el.point.values))
-        tmp.append(shp.ops.unary_union(el.buffered_point.values))
-
-        data_gpd.loc[num] = tmp
-
-    return gpd.GeoDataFrame(data_gpd, geometry="Polygon")
-
-
 def create_swath_polygon(data: xr.DataArray, product: str) -> gpd.GeoDataFrame:
     """
     data = create_swath_polygon_time(data, product)
@@ -135,29 +74,6 @@ def create_swath_polygon(data: xr.DataArray, product: str) -> gpd.GeoDataFrame:
     data_gpd.iloc[0] = vals
 
     return gpd.GeoDataFrame(data_gpd, geometry="Polygon")
-
-
-def create_swath_multipoint(data: pd.DataFrame) -> gpd.GeoDataFrame:
-    """
-    data = create_swath_multipoint(data)
-
-    Arguments:
-    - data: xarray coordinate data array
-
-    Returns:
-    - data: a geopandas data frame with multipoint geometry for the swath.
-    """
-
-    multipoint = shp.MultiPoint(points=data.geometry.values)
-    gpd_ds = gpd.GeoDataFrame(
-        {
-            "StartTime": data.Time.iloc[0],
-            "EndTime": data.Time.iloc[-1],
-            "geometry": [multipoint],
-        }
-    )
-
-    return gpd_ds
 
 
 def point_buffer(x, resolution: float = 0.5):

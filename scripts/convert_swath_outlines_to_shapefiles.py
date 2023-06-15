@@ -1,9 +1,5 @@
 from datetime import datetime
 from file_check import check_for_satellite_data, check_for_shapefile_data, read_config
-import importlib
-import read_product
-
-importlib.reload(read_product)
 from read_product import DS, read_swath, read_in_range_log, read_not_in_range_log
 from shapefile_geometry import write_shapefile, create_swath_polygon
 
