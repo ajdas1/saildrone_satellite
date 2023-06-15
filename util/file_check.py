@@ -1,7 +1,6 @@
 import geopandas as gpd
 import os
 import yaml
-import shutil
 
 
 def fetch_repo_path():
