@@ -2,6 +2,7 @@
 satellite_data_folder: data_satellite
 saildrone_data_folder: data_saildrone
 shapefile_data_folder: data_shapefile
+figure_data_folder: figs
 log_data_folder: log
 scripts_folder: scripts
 # saildrone setup
