@@ -2,7 +2,11 @@
 from datetime import datetime
 from file_check import check_for_satellite_data, check_for_shapefile_data, read_config
 from read_product import DS, read_swath
-from shapefile_geometry import write_shapefile, create_swath_polygon
+
+import importlib
+import shapefile_geometry
+importlib.reload(shapefile_geometry)
+from shapefile_geometry import write_shapefile, store_data_as_points, create_swath_polygon
 
 
 
@@ -38,6 +42,7 @@ else:
             stime = datetime.now()
             data = read_swath(filename=fl, product=product)
             data_gpd = create_swath_polygon(data=data, product=product)
+            # data_gpd = store_data_as_points(data=data)
             write_shapefile(data=data_gpd, product=product, filename=fl)
             etime = datetime.now()
             dt = etime - stime

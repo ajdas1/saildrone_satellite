@@ -13,9 +13,10 @@ else:
     filename = check_for_saildrone_data(sd_number=config['saildrone_number'], sd_year=config['saildrone_year'], format=".nc")
     filename_shapefile = check_for_saildrone_shapefile(sd_number=config['saildrone_number'], sd_year=config['saildrone_year'], format=".shp")
 
-    if filename_shapefile in filename:
-        print("This saildrone has already been processed.")
-        exit()
+    if len(filename_shapefile) > 0:
+        if filename_shapefile in filename:
+            print("This saildrone has already been processed.")
+            exit()
     else:
     
         data = read_saildrone(filename=filename)
