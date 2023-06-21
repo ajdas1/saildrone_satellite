@@ -5,6 +5,18 @@ A good place to download satellite data granules: [NASA EARTHDATA](earthdata.nas
 
 
 
+# To get everything working:
+
+The modules used for running this package are stored in the top-level environment.yml file.
+
+To create a new Conda environment with the provided modules, run the following from the top-level directory:
+
+```
+conda env create -f environment.yml
+conda activate sd_satellite
+conda develop "$PWD/util"
+```
+
 
 
 # Workflow: 
