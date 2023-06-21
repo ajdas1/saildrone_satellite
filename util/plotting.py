@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 import matplotlib.ticker as mticker
 import numpy as np
 import os
+import pandas as pd
 import xarray as xr
 
 from cartopy.feature import COASTLINE
@@ -135,4 +136,49 @@ def plot_swath(
     set_cartopy_projection(ax=ax)
     ax.set_title(f"{start_time} UTC - {end_time} UTC")
     plt.savefig(f"{plot_path}{os.sep}{savefile}", dpi=200, bbox_inches="tight")
+    plt.close("all")
+
+
+
+def plot_saildrone_overlap_swath_general(saildrone_data: pd.DataFrame, satellite_swaths: pd.DataFrame, data_units: str, filename: str):
+
+    sd_months = saildrone_data.time.dt.month.unique()
+    savedir = f"{fetch_repo_path()}{os.sep}{config['figure_data_folder']}"
+
+    fig = plt.figure(figsize=(12, len(sd_months)*3))
+    gs = GridSpec(len(sd_months), 1)
+    gs.update(hspace=.25)
+    axes = []
+    for mon in range(len(sd_months)):
+        if mon == 0:
+            axes.append(fig.add_subplot(gs[mon, 0]))
+        else:
+            axes.append(fig.add_subplot(gs[mon, 0], sharey=axes[0]))
+        axes[mon].grid(True, which="both", linewidth=.5, linestyle="dashed")
+
+    for mon, month in enumerate(sd_months):
+        sat_sub = satellite_swaths[(satellite_swaths.StartTime.dt.month == month) | (satellite_swaths.EndTime.dt.month == month)].reset_index(drop=True)
+        if len(sat_sub) > 0:
+            month_start = pd.to_datetime(f"{sat_sub.StartTime.dt.year.iloc[0]}{month:02d}01")
+            sat_sub["tmfmt_start"] = pd.to_timedelta(sat_sub.StartTime - month_start).dt.total_seconds() / 60 / 60 / 24 + 1
+            sat_sub["tmfmt_end"] = pd.to_timedelta(sat_sub.EndTime - month_start).dt.total_seconds() / 60 / 60 / 24 + 1
+            for idx in range(sat_sub.index[0], sat_sub.index[-1]+1, 1):
+                axes[mon].axvspan(sat_sub.tmfmt_start.iloc[idx], sat_sub.tmfmt_end.iloc[idx], alpha=.3, color="k")
+
+        sd_sub = saildrone_data[saildrone_data.time.dt.month == month].reset_index(drop=True)
+        if len(sd_sub) > 0:
+            sd_sub["tmfmt"] = pd.to_timedelta(sd_sub.time - sd_sub.time.iloc[0]).dt.total_seconds() / 60 / 60 / 24 + 1
+            axes[mon].plot(sd_sub.tmfmt, sd_sub[config["saildrone_variable_name"]], ".", markersize=1)
+            axes[mon].set_xticks(np.arange(1, sd_sub.tmfmt.max(), 1), minor=True)
+            axes[mon].set_xticks(np.arange(1, sd_sub.tmfmt.max(), 5), minor=False)
+            axes[mon].set_xlim(1, 32)
+            axes[mon].set_title(f"SD: {config['saildrone_number']} ({config['saildrone_year']}); Swath: {config['satellite_product']}; Variable: {config['saildrone_variable_name']} ({data_units}); Month: {month}")
+
+
+    axes[0].axvspan(-10, 0, alpha=.3, color="k", label="Swath overlap")
+    axes[0].plot(-10, 0, ".", markersize=1, label="Saildrone")
+    axes[0].legend(loc=2)
+    axes[-1].set_xlabel("Day of month")
+
+    plt.savefig(f"{savedir}{os.sep}{filename}", dpi=200, bbox_inches="tight")
     plt.close("all")

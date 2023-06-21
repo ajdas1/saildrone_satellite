@@ -6,4 +6,4 @@ python ./scripts/convert_swath_outlines_to_shapefiles.py
 python ./scripts/match_saildrone_satellite_swaths_pass1.py
 python ./scripts/match_saildrone_satellite_swaths_pass2.py
 
-
+python ./scripts/plot_saildrone_data_swath_coverage.py

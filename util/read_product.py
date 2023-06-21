@@ -95,7 +95,7 @@ def read_ASCAT(filename: str) -> xr.DataArray:
     return data
 
 
-def read_saildrone(filename: str) -> xr.DataArray:
+def read_saildrone(filename: str, masked_nan: bool = False) -> xr.DataArray:
     """
     data = read_saildrone(filename: str)
 
@@ -121,6 +121,11 @@ def read_saildrone(filename: str) -> xr.DataArray:
     )
     data = data.rename({"latitude": "lat", "longitude": "lon"})
     data = data.set_coords(["lat", "lon"])
+
+    if masked_nan:
+        fill_value = 9e36
+        masked_data = data.where(data < fill_value)
+        data = masked_data
 
     return data
 
