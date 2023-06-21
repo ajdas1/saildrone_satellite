@@ -20,12 +20,11 @@ else:
     filename = check_for_saildrone_data(
         sd_number=config["saildrone_number"],
         sd_year=config["saildrone_year"],
-        format=".nc",
+        format="nc"
     )
     filename_shapefile = check_for_saildrone_shapefile(
         sd_number=config["saildrone_number"],
         sd_year=config["saildrone_year"],
-        format=".shp",
     )
 
     if len(filename_shapefile) > 0:
