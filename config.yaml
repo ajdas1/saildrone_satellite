@@ -22,5 +22,5 @@ saildrone_variable_name: wind_speed
 create_dir_structure: True
 register_dataset: True
 match_saildrone_satellite_swaths: True
-# plot_saildrone_data_swath_coverage: False
+plot_saildrone_satellite_data_match: True
 # pull_saildrone_swath_data_overlap: False
