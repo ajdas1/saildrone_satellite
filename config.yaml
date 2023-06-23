@@ -9,7 +9,7 @@ scripts_folder: scripts
 
 # satellite dataset setup - resolution should be rounded up
 satellite_product: ASCAT
-satellite_dataset_resolution: 0.3
+satellite_variable_name: wind_speed
 
 # saildrone setup
 saildrone_year: 2022
@@ -19,8 +19,8 @@ saildrone_distance_tolerance_km: 50
 saildrone_variable_name: wind_speed
 
 # processing steps
-create_dir_structure: True
-register_dataset: True
-match_saildrone_satellite_swaths: True
-plot_saildrone_satellite_data_match: True
-# pull_saildrone_swath_data_overlap: False
+create_dir_structure: False
+register_dataset: False
+match_saildrone_satellite_swaths: False
+plot_saildrone_satellite_data_timeseries: False
+plot_saildrone_satellite_data_scatter: True

@@ -3,7 +3,7 @@ from plot import plot_timeseries_swath_overlap
 
 config = read_config()
 
-if not config["plot_saildrone_satellite_data_match"]:
+if not config["plot_saildrone_satellite_data_timeseries"]:
     exit()
 
 print(
@@ -29,7 +29,7 @@ saildrone_data = read_saildrone(filename=saildrone_filename, masked_nan=True, to
 match_data = read_matching_data_from_file(join_swaths=True)
 
 
-filename = f"SD{config['saildrone_number']}." + f"{config['saildrone_year']}_" + f"{config['satellite_product']}_overlap.png"
+filename = f"SD{config['saildrone_number']}." + f"{config['saildrone_year']}_" + f"{config['satellite_product']}_timeseries_overlap.png"
 plot_timeseries_swath_overlap(
     sd_data=saildrone_data,
     swath_match=match_data,

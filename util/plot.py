@@ -48,3 +48,38 @@ def plot_timeseries_swath_overlap(sd_data: pd.DataFrame, swath_match: pd.DataFra
 
     plt.savefig(f"{savedir}/{filename}", dpi=200, bbox_inches="tight")
     plt.close()
+
+
+
+
+def plot_scatterplot_overlap(combined_pts: pd.DataFrame, mean_pts: pd.DataFrame, nearest_pts: pd.DataFrame, filename: str, axmin=0, axmax=20):
+
+    config = read_config()
+    savedir = f"{fetch_repo_path()}{os.sep}{config['figure_data_folder']}"
+    fig = plt.figure(figsize = (12, 4.5))
+    gs = GridSpec(2, 3, height_ratios=[1, .08])
+    gs.update(hspace=.35)
+    ax1 = fig.add_subplot(gs[0, 0])
+    ax2 = fig.add_subplot(gs[0, 1], sharex=ax1, sharey=ax1)
+    ax3 = fig.add_subplot(gs[0, 2], sharex=ax1, sharey=ax1)
+    cax = fig.add_subplot(gs[1, :])
+    for ax in [ax1, ax2, ax3]:
+        ax.grid(True, which="both", linewidth=.5, linestyle="dashed")
+        ax.axline((0, 0), (1, 1), zorder=0, c="k", lw=1)
+        ax.set_xlabel(f"SD {config['saildrone_variable_name']}")
+
+    f1 = ax1.scatter(combined_pts.sd_var, combined_pts.st_var, s=15, c=combined_pts.dist, vmin=0, vmax=config["saildrone_distance_tolerance_km"], cmap="turbo_r", edgecolor="k", linewidth=.5)
+    ax2.scatter(mean_pts.sd_var, mean_pts.st_var, s=15, c=mean_pts.dist, vmin=0, vmax=config["saildrone_distance_tolerance_km"], cmap="turbo_r", edgecolor="k", linewidth=.5)
+    ax3.scatter(nearest_pts.sd_var, nearest_pts.st_var, s=15, c=nearest_pts.dist, vmin=0, vmax=config["saildrone_distance_tolerance_km"], cmap="turbo_r", edgecolor="k", linewidth=.5)
+    ax1.set_yticks(ax1.get_xticks())
+
+    cbar = plt.colorbar(f1, cax=cax, orientation="horizontal")
+    ax1.set_xlim(axmin, axmax)
+    ax1.set_ylim(axmin, axmax)
+    ax1.set_title("All points")
+    ax2.set_title("Mean satellite point")
+    ax3.set_title("Nearest satellite point")
+    ax1.set_ylabel(f"Satellite {config['saildrone_variable_name']}")
+    plt.savefig(f"{savedir}/{filename}", dpi=300, bbox_inches="tight")
+    plt.close("all")
+
