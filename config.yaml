@@ -2,6 +2,7 @@
 satellite_data_folder: data_satellite
 saildrone_data_folder: data_saildrone
 shapefile_data_folder: data_shapefile
+matching_data_folder: data_match
 figure_data_folder: figs
 log_data_folder: log
 scripts_folder: scripts
@@ -14,13 +15,12 @@ satellite_dataset_resolution: 0.3
 saildrone_year: 2022
 saildrone_number: 1059
 saildrone_time_tolerance_min: 2
+saildrone_distance_tolerance_km: 50
 saildrone_variable_name: wind_speed
 
 # processing steps
-create_dir_structure: False
-register_dataset: False
-convert_saildrone_coordinates_to_shapefile: False
-convert_swath_outlines_to_shapefiles: False
-match_saildrone_satellite_swaths_pass1: False
-match_saildrone_satellite_swaths_pass2: False
-plot_saildrone_data_swath_coverage: True
+create_dir_structure: True
+register_dataset: True
+match_saildrone_satellite_swaths: True
+# plot_saildrone_data_swath_coverage: False
+# pull_saildrone_swath_data_overlap: False

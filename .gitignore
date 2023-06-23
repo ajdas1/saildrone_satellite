@@ -1,9 +1,13 @@
-## data files
-**/data
+## data file folders
+**/data_match
+**/data_saildrone
+**/data_satellite
 **/data_shapefile
 
+## data file formats
 **.nc
 **.txt
+**.csv
 
 **.cpg
 **.dbf
