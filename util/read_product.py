@@ -91,11 +91,12 @@ def read_ASCAT(filename: str) -> xr.DataArray:
     )
 
     data = data.set_coords(["time"])
+    data.coords['lon'] = (data.coords['lon'] + 180) % 360 - 180
 
     return data
 
 
-def read_saildrone(filename: str, masked_nan: bool = False) -> xr.DataArray:
+def read_saildrone(filename: str, masked_nan: bool = False, fill_value: float = 9e36) -> xr.DataArray:
     """
     data = read_saildrone(filename: str)
 
@@ -119,14 +120,26 @@ def read_saildrone(filename: str, masked_nan: bool = False) -> xr.DataArray:
         decode_times=True,
         decode_coords=True,
     )
+
+
+
     data = data.rename({"latitude": "lat", "longitude": "lon"})
-    data = data.set_coords(["lat", "lon"])
 
     if masked_nan:
         fill_value = 9e36
-        masked_data = data.where(data < fill_value)
-        data = masked_data
+        masked_data = data.to_dataframe()
+        masked_data = masked_data.where(masked_data < fill_value)
+        masked_data = masked_data[masked_data.lon.notna() & masked_data.lat.notna()]
+        masked_data = masked_data.dropna(axis=0, thresh=3)
+        data = masked_data.to_xarray()
 
+    # if masked_nan:
+    #     masked_data = data.where(data < fill_value)
+    #     masked_data = masked_data.where(masked_data.lon < fill_value)
+    #     masked_data = masked_data.where(masked_data.lat < fill_value)
+    #     data = masked_data
+
+    data = data.set_coords(["lat", "lon"])
     return data
 
 
@@ -170,7 +183,7 @@ def read_shapefile(filedir: str, product: str) -> gpd.GeoDataFrame:
     return data
 
 
-def read_in_range_log(config: dict, pass_number: int) -> list:
+def read_in_range_log(config: dict) -> list:
     """
     files = read_in_range_log(config: dict, pass_number: int)
 
@@ -189,7 +202,9 @@ def read_in_range_log(config: dict, pass_number: int) -> list:
         + f"saildrone_{config['saildrone_number']}_"
         + f"{config['saildrone_year']}_"
         + f"{config['satellite_product']}_swath_in_range_"
-        + f"pass{pass_number}.txt"
+        + f"{config['saildrone_time_tolerance_min']}min_"
+        + f"{config['saildrone_distance_tolerance_km']}km"
+        + ".txt"
     )
 
     try:
@@ -200,7 +215,7 @@ def read_in_range_log(config: dict, pass_number: int) -> list:
     return files
 
 
-def read_not_in_range_log(config: dict, pass_number: int) -> list:
+def read_not_in_range_log(config: dict) -> list:
     """
     files = read_in_range_log(config: dict, pass_number: int)
 
@@ -218,7 +233,9 @@ def read_not_in_range_log(config: dict, pass_number: int) -> list:
         + f"saildrone_{config['saildrone_number']}_"
         + f"{config['saildrone_year']}_"
         + f"{config['satellite_product']}_swath_not_in_range_"
-        + f"pass{pass_number}.txt"
+        + f"{config['saildrone_time_tolerance_min']}min_"
+        + f"{config['saildrone_distance_tolerance_km']}km"
+        + ".txt"
     )
 
     try:

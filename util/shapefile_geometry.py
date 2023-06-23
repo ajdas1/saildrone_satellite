@@ -177,3 +177,8 @@ def saildrone_intersect(x, saildrone_data) -> bool:
     ]
 
     return shp.LineString(sd_data.geometry).intersects(x.geometry)
+
+
+
+
+

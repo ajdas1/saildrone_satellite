@@ -325,3 +325,15 @@ def write_range_not_range_to_log(
         elif isinstance(not_in_range, list):
             for row in not_in_range:
                 fl.write(row + "\n")
+
+
+def write_matching_data_to_file(matching_data: list, matching_files: list, config: dict):
+
+    repo_path = fetch_repo_path()
+    matching_data_path = f"{repo_path}{os.sep}" + f"{config['matching_data_folder']}{os.sep}" + f"SD{config['saildrone_number']}_{config['saildrone_year']}{os.sep}" + f"{config['satellite_product']}"
+
+    for nfl, fl in enumerate(matching_files):
+        current_matching_data = matching_data[nfl]
+        current_csv = f"{matching_data_path}{os.sep}{fl.split('.')[0]}.csv"
+        if not os.path.isfile(current_csv):
+            current_matching_data.to_csv(current_csv, index=False)

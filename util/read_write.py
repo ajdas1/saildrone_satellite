@@ -381,6 +381,27 @@ def write_matching_data_to_file(matching_data: pd.DataFrame, matching_file: str)
         matching_data.to_csv(current_csv, index=False)
 
 
+
+def read_matching_data_from_file(join_swaths: bool = False):
+    config = read_config()
+    repo_path = fetch_repo_path()
+
+    match_path = f"{repo_path}{os.sep}" + f"{config['matching_data_folder']}{os.sep}" + f"SD{config['saildrone_number']}_{config['saildrone_year']}{os.sep}" + f"{config['satellite_product']}"
+    match_fls = sorted(os.listdir(match_path))
+
+    match_data = []
+    for fl in match_fls:
+        data = pd.read_csv(f"{match_path}/{fl}")
+        data.sd_time = pd.to_datetime(data.sd_time)
+        data.st_time = pd.to_datetime(data.st_time)
+        match_data.append(data)
+    
+    if join_swaths:
+        match_data = pd.concat(match_data)
+
+    return match_data
+
+
 def read_swath(filename: str, masked_nan: bool = False, as_pd: bool = False) -> xr.DataArray:
     """
     data = read_swath(filename: str)
