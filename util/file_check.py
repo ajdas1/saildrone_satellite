@@ -124,13 +124,32 @@ def register_new_dataset(product: str):
         )
 
     if not os.path.isdir(
-        f"{path}{os.sep}" + f"{config['matching_data_folder']}{os.sep}" + f"{product}"
+        f"{path}{os.sep}" + f"{config['matching_data_folder']}"
+    ):
+        os.mkdir(
+            f"{path}{os.sep}"
+            + f"{config['matching_data_folder']}"
+        )
+
+    if not os.path.isdir(
+        f"{path}{os.sep}" + f"{config['matching_data_folder']}{os.sep}" + f"SD{config['saildrone_number']}_{config['saildrone_year']}"
     ):
         os.mkdir(
             f"{path}{os.sep}"
             + f"{config['matching_data_folder']}{os.sep}"
-            + f"{product}"
+            + f"SD{config['saildrone_number']}_{config['saildrone_year']}"
         )
+
+    if not os.path.isdir(
+        f"{path}{os.sep}" + f"{config['matching_data_folder']}{os.sep}" + f"SD{config['saildrone_number']}_{config['saildrone_year']}{os.sep}" + f"{product}"
+    ):
+        os.mkdir(
+            f"{path}{os.sep}"
+            + f"{config['matching_data_folder']}{os.sep}"
+            + f"SD{config['saildrone_number']}_{config['saildrone_year']}{os.sep}" + f"{product}"
+        )
+
+
 
 
 def check_for_shapefile_data(product: str, append_datadir: bool = False) -> list[str]:
