@@ -123,13 +123,6 @@ def register_new_dataset(product: str):
             + f"{product}"
         )
 
-    if not os.path.isdir(
-        f"{path}{os.sep}" + f"{config['matching_data_folder']}"
-    ):
-        os.mkdir(
-            f"{path}{os.sep}"
-            + f"{config['matching_data_folder']}"
-        )
 
     if not os.path.isdir(
         f"{path}{os.sep}" + f"{config['matching_data_folder']}{os.sep}" + f"SD{config['saildrone_number']}_{config['saildrone_year']}"
