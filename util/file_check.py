@@ -2,6 +2,7 @@ import geopandas as gpd
 import os
 import yaml
 
+from typing import Union
 
 def fetch_repo_path():
     """
@@ -62,6 +63,9 @@ def create_data_folder_structure():
     if not os.path.isdir(f"{path}{os.sep}" + f"{config['log_data_folder']}"):
         os.mkdir(f"{path}{os.sep}" + f"{config['log_data_folder']}")
 
+    if not os.path.isdir(f"{path}{os.sep}" + f"{config['matching_data_folder']}"):
+        os.mkdir(f"{path}{os.sep}" + f"{config['matching_data_folder']}")
+
     if not os.path.isdir(f"{path}{os.sep}" + f"{config['figure_data_folder']}"):
         os.mkdir(f"{path}{os.sep}" + f"{config['figure_data_folder']}")
 
@@ -116,6 +120,15 @@ def register_new_dataset(product: str):
         os.mkdir(
             f"{path}{os.sep}"
             + f"{config['shapefile_data_folder']}{os.sep}"
+            + f"{product}"
+        )
+
+    if not os.path.isdir(
+        f"{path}{os.sep}" + f"{config['matching_data_folder']}{os.sep}" + f"{product}"
+    ):
+        os.mkdir(
+            f"{path}{os.sep}"
+            + f"{config['matching_data_folder']}{os.sep}"
             + f"{product}"
         )
 
@@ -239,10 +252,9 @@ def check_for_satellite_data(
 
 
 def write_range_not_range_to_log(
-    in_range: gpd.GeoDataFrame,
-    not_in_range: gpd.GeoDataFrame,
+    in_range: Union[gpd.GeoDataFrame, list],
+    not_in_range: Union[gpd.GeoDataFrame, list],
     config: dict,
-    pass_number: int = 1,
 ):
     """
     write_range_not_range_to_log(in_range: list, gpd.GeoDataFrame,
@@ -269,7 +281,10 @@ def write_range_not_range_to_log(
         + f"saildrone_{config['saildrone_number']}_"
         + f"{config['saildrone_year']}_"
         + f"{config['satellite_product']}_"
-        + f"swath_in_range_pass{pass_number}.txt"
+        + f"swath_in_range_"
+        + f"{config['saildrone_time_tolerance_min']}min_"
+        + f"{config['saildrone_distance_tolerance_km']}km"
+        + ".txt"
     )
     log_path_not_in_range = (
         f"{path}{os.sep}"
@@ -277,7 +292,10 @@ def write_range_not_range_to_log(
         + f"saildrone_{config['saildrone_number']}_"
         + f"{config['saildrone_year']}_"
         + f"{config['satellite_product']}_"
-        + f"swath_not_in_range_pass{pass_number}.txt"
+        + f"swath_not_in_range_"
+        + f"{config['saildrone_time_tolerance_min']}min_"
+        + f"{config['saildrone_distance_tolerance_km']}km"
+        + ".txt"
     )
 
     with open(log_path_in_range, "a") as fl:
@@ -289,21 +307,6 @@ def write_range_not_range_to_log(
                 fl.write(row + "\n")
 
     with open(log_path_not_in_range, "a") as fl:
-        if pass_number == 2:
-            fl_prev = (
-                f"{path}{os.sep}"
-                + f"{config['log_data_folder']}{os.sep}"
-                + f"saildrone_{config['saildrone_number']}_"
-                + f"{config['saildrone_year']}_"
-                + f"{config['satellite_product']}_"
-                + f"swath_not_in_range_pass{pass_number-1}.txt"
-            )
-            with open(fl_prev, "r") as fl_p:
-                data = fl_p.readlines()
-            with open(log_path_not_in_range, "w") as fl:
-                for line in data:
-                    fl.write(line)
-
         if isinstance(not_in_range, gpd.GeoDataFrame):
             for _, row in not_in_range.iterrows():
                 fl.write(row.filename + "\n")

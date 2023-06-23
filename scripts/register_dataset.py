@@ -4,9 +4,7 @@ from read_product import DS
 
 config = read_config()
 
-if not config["register_dataset"]:
-    print("Skipping the registration of a new satellite product.")
-else:
+if config["register_dataset"]:
     print(f"Registering a new dataset: {config['satellite_product']}")
     register_new_dataset(product=config["satellite_product"])
 
