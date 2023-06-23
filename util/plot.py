@@ -4,9 +4,9 @@ import pandas as pd
 from read_write import fetch_repo_path, read_config
 import numpy as np
 import matplotlib.pyplot as plt
-
-
 from matplotlib.gridspec import GridSpec
+from sklearn.linear_model import LinearRegression
+from sklearn.metrics import r2_score
 
 
 def plot_timeseries_swath_overlap(sd_data: pd.DataFrame, swath_match: pd.DataFrame, filename: str):
@@ -52,7 +52,7 @@ def plot_timeseries_swath_overlap(sd_data: pd.DataFrame, swath_match: pd.DataFra
 
 
 
-def plot_scatterplot_overlap(combined_pts: pd.DataFrame, mean_pts: pd.DataFrame, nearest_pts: pd.DataFrame, filename: str, axmin=0, axmax=20):
+def plot_scatterplot_overlap(combined_pts: pd.DataFrame, mean_pts: pd.DataFrame, nearest_pts: pd.DataFrame, filename: str, axmin: float = 0, axmax: float = 20, linreg: bool = True):
 
     config = read_config()
     savedir = f"{fetch_repo_path()}{os.sep}{config['figure_data_folder']}"
@@ -73,7 +73,23 @@ def plot_scatterplot_overlap(combined_pts: pd.DataFrame, mean_pts: pd.DataFrame,
     ax3.scatter(nearest_pts.sd_var, nearest_pts.st_var, s=15, c=nearest_pts.dist, vmin=0, vmax=config["saildrone_distance_tolerance_km"], cmap="turbo_r", edgecolor="k", linewidth=.5)
     ax1.set_yticks(ax1.get_xticks())
 
-    cbar = plt.colorbar(f1, cax=cax, orientation="horizontal")
+    if linreg:
+        reg_combined = LinearRegression().fit(combined_pts.sd_var.values.reshape(-1, 1), combined_pts.st_var.values.reshape(-1, 1))
+        reg_mean = LinearRegression().fit(mean_pts.sd_var.values.reshape(-1, 1), mean_pts.st_var.values.reshape(-1, 1))
+        reg_nearest = LinearRegression().fit(nearest_pts.sd_var.values.reshape(-1, 1), nearest_pts.st_var.values.reshape(-1, 1))
+
+        ax1.axline((0, reg_combined.intercept_[0]), slope=reg_combined.coef_[0][0], c="m", lw=1)
+        ax2.axline((0, reg_mean.intercept_[0]), slope=reg_mean.coef_[0][0], c="m", lw=1)
+        ax3.axline((0, reg_nearest.intercept_[0]), slope=reg_nearest.coef_[0][0], c="m", lw=1)
+
+        txt = f"Slope: {reg_combined.coef_[0][0]:.2f}\nIntercept: {reg_combined.intercept_[0]:.2f}\nR" + u"$^2$" + f": {r2_score(combined_pts.sd_var, combined_pts.st_var):.2f}"
+        ax1.text(axmin, axmax, txt, ha="left", va="top")
+        txt = f"Slope: {reg_mean.coef_[0][0]:.2f}\nIntercept: {reg_mean.intercept_[0]:.2f}\nR" + u"$^2$" + f": {r2_score(mean_pts.sd_var, mean_pts.st_var):.2f}"
+        ax2.text(axmin, axmax, txt, ha="left", va="top")
+        txt = f"Slope: {reg_nearest.coef_[0][0]:.2f}\nIntercept: {reg_nearest.intercept_[0]:.2f}\nR" + u"$^2$" + f": {r2_score(nearest_pts.sd_var, nearest_pts.st_var):.2f}"
+        ax3.text(axmin, axmax, txt, ha="left", va="top")
+
+    _ = plt.colorbar(f1, cax=cax, orientation="horizontal")
     ax1.set_xlim(axmin, axmax)
     ax1.set_ylim(axmin, axmax)
     ax1.set_title("All points")

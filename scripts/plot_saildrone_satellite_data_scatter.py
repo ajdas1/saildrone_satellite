@@ -52,5 +52,10 @@ combined = pd.concat(combined).reset_index(drop=True)
 nearest = pd.concat(nearest).reset_index(drop=True)
 mean = pd.concat(mean).reset_index(drop=True)
 
+
+import plot
+importlib.reload(plot)
+from plot import plot_scatterplot_overlap
+
 filename = f"SD{config['saildrone_number']}." + f"{config['saildrone_year']}_" + f"{config['satellite_product']}_scatter_overlap.png"
 plot_scatterplot_overlap(combined_pts=combined, mean_pts=mean, nearest_pts=nearest, filename=filename, axmin=0, axmax=20)
