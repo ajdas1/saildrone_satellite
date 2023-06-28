@@ -392,8 +392,8 @@ def read_matching_data_from_file(join_swaths: bool = False):
     match_data = []
     for fl in match_fls:
         data = pd.read_csv(f"{match_path}/{fl}")
-        data.sd_time = pd.to_datetime(data.sd_time)
-        data.st_time = pd.to_datetime(data.st_time)
+        data.sd_time = pd.to_datetime(data.sd_time, format="%Y-%m-%d %H:%M:%S")
+        data.st_time = pd.to_datetime(data.st_time, format="%Y-%m-%d %H:%M:%S")
         match_data.append(data)
     
     if join_swaths:
