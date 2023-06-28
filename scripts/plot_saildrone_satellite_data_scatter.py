@@ -1,3 +1,6 @@
+import importlib
+import read_write
+importlib.reload(read_write)
 from read_write import check_for_saildrone_data, read_config, read_in_range_log, read_matching_data_from_file, read_saildrone, read_swath
 import pandas as pd
 
