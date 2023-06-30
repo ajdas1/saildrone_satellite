@@ -1,13 +1,19 @@
-
 import pandas as pd
+import sys
 
 from calculations import great_circle_distance, subset_saildrone_time
 from datetime import datetime
-import importlib
-import read_write
-importlib.reload(read_write)
-from read_write import check_for_saildrone_data, check_for_satellite_data, read_config, read_in_range_log, read_not_in_range_log, read_saildrone, read_swath, write_matching_data_to_file, write_to_log
-import sys
+from read_write import (
+    check_for_saildrone_data,
+    check_for_satellite_data,
+    read_config,
+    read_in_range_log,
+    read_not_in_range_log,
+    read_saildrone,
+    read_swath,
+    write_matching_data_to_file,
+    write_to_log,
+)
 
 
 config = read_config()
@@ -44,7 +50,9 @@ if len(satellite_filenames) == 0:
     exit()
 
 
-saildrone_data = read_saildrone(filename=saildrone_filename, masked_nan=True, to_pd=True)
+saildrone_data = read_saildrone(
+    filename=saildrone_filename, masked_nan=True, to_pd=True
+)
 
 
 filenames = []
@@ -53,46 +61,64 @@ for num, fl in enumerate(satellite_filenames):
     start_time = datetime.now()
     print(f"     {num + 1}/{len(satellite_filenames)}: {fl}", end="")
 
-    swath_data = read_swath(filename=fl, masked_nan=True, as_pd=True)    
+    swath_data = read_swath(filename=fl, masked_nan=True, as_pd=True)
 
-    saildrone_subset = subset_saildrone_time(sd_data=saildrone_data, start_time=swath_data.time.iloc[0], end_time=swath_data.time.iloc[-1])
-
-
+    saildrone_subset = subset_saildrone_time(
+        sd_data=saildrone_data,
+        start_time=swath_data.time.iloc[0],
+        end_time=swath_data.time.iloc[-1],
+    )
 
     sd_patch_swath = []
     st_patch_swath = []
     dist_patch_swath = []
 
     tmp = swath_data.groupby("time")
-    satellite_patches = [tmp.get_group(group).reset_index(drop=True) for group in tmp.groups]
+    satellite_patches = [
+        tmp.get_group(group).reset_index(drop=True) for group in tmp.groups
+    ]
 
     swath_points = []
     for patch in satellite_patches:
         patch_time = patch.time.iloc[0]
         dt = pd.Timedelta(minutes=config["saildrone_time_tolerance_min"])
-        saildrone_patch = subset_saildrone_time(sd_data=saildrone_subset, start_time=patch_time-dt, end_time=patch_time+dt)
-        
+        saildrone_patch = subset_saildrone_time(
+            sd_data=saildrone_subset,
+            start_time=patch_time - dt,
+            end_time=patch_time + dt,
+        )
 
         if len(saildrone_patch) > 0:
-            points = pd.DataFrame([], columns=["sd_lon", "sd_lat", "sd_time", "st_lon", "st_lat", "st_time"], index=range(len(saildrone_patch)*len(patch)))
-            
+            points = pd.DataFrame(
+                [],
+                columns=["sd_lon", "sd_lat", "sd_time", "st_lon", "st_lat", "st_time"],
+                index=range(len(saildrone_patch) * len(patch)),
+            )
+
             for sd_point in range(len(saildrone_patch)):
                 lon1 = saildrone_patch.lon.iloc[sd_point]
                 lat1 = saildrone_patch.lat.iloc[sd_point]
                 time1 = saildrone_patch.time.iloc[sd_point]
-                for st_point in range(len(patch)): 
+                for st_point in range(len(patch)):
                     lon2 = patch.lon.iloc[st_point]
                     lat2 = patch.lat.iloc[st_point]
                     time2 = patch.time.iloc[st_point]
 
-                    points.iloc[sd_point*len(patch) + st_point] = [lon1, lat1, time1, lon2, lat2, time2]
+                    points.iloc[sd_point * len(patch) + st_point] = [
+                        lon1,
+                        lat1,
+                        time1,
+                        lon2,
+                        lat2,
+                        time2,
+                    ]
 
             points["dist"] = points.apply(great_circle_distance, axis=1)
-            points = points[points.dist <= config["saildrone_distance_tolerance_km"]].reset_index(drop=True)
+            points = points[
+                points.dist <= config["saildrone_distance_tolerance_km"]
+            ].reset_index(drop=True)
             if len(points) > 0:
                 swath_points.append(points)
-
-
 
     end_time = datetime.now()
     dt = (end_time - start_time).total_seconds()
@@ -106,7 +132,3 @@ for num, fl in enumerate(satellite_filenames):
     else:
         write_to_log(filename=fl, in_range=False)
         print()
-
-
-
-

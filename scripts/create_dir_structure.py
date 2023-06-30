@@ -1,5 +1,6 @@
-from read_write import create_data_folder_structure, read_config
 import sys
+
+from read_write import create_data_folder_structure, read_config
 
 config = read_config()
 
