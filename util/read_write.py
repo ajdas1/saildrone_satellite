@@ -78,6 +78,12 @@ def create_data_folder_structure():
     if not os.path.isdir(f"{path}{os.sep}" + f"{config['matching_data_folder']}"):
         os.mkdir(f"{path}{os.sep}" + f"{config['matching_data_folder']}")
 
+    if not os.path.isdir(f"{path}{os.sep}" + f"{config['matching_data_folder']}{os.sep}" + f"SD{config['saildrone_number']}_{config['saildrone_year']}"):
+        os.mkdir(f"{path}{os.sep}" + f"{config['matching_data_folder']}{os.sep}" + f"SD{config['saildrone_number']}_{config['saildrone_year']}")
+
+    if not os.path.isdir(f"{path}{os.sep}" + f"{config['matching_data_folder']}{os.sep}" + f"SD{config['saildrone_number']}_{config['saildrone_year']}{os.sep}" + f"{config['satellite_product']}"):
+        os.mkdir(f"{path}{os.sep}" + f"{config['matching_data_folder']}{os.sep}" + f"SD{config['saildrone_number']}_{config['saildrone_year']}{os.sep}" + f"{config['satellite_product']}")
+
     if not os.path.isdir(f"{path}{os.sep}" + f"{config['figure_data_folder']}"):
         os.mkdir(f"{path}{os.sep}" + f"{config['figure_data_folder']}")
 
@@ -305,12 +311,35 @@ def read_saildrone(filename: str, masked_nan: bool = False, fill_value: float = 
     )
 
     data = data.rename({"latitude": "lat", "longitude": "lon"})
+    if "WIND_FROM_MEAN" in data.keys():
+        data = data.rename({"WIND_FROM_MEAN": "wind_direction"})
+    if "WIND_SPEED_MEAN" in data.keys():
+        data = data.rename({"WIND_SPEED_MEAN": "wind_speed"})
+    if "TEMP_AIR_MEAN" in data.keys():
+        data = data.rename({"TEMP_AIR_MEAN": "air_temperature"})
+    if "RH_MEAN" in data.keys():
+        data = data.rename({"RH_MEAN": "air_relative_humidity"})
+    if "BARO_PRES_MEAN" in data.keys():
+        data = data.rename({"BARO_PRES_MEAN": "air_pressure"})
+    if "TEMP_SBE37_MEAN" in data.keys():
+        data = data.rename({"TEMP_SBE37_MEAN": "sea_surface_temperature"})
+    if "SAL_SBE37_MEAN" in data.keys():
+        data = data.rename({"SAL_SBE37_MEAN": "ocean_salinity"})
+    if "WAVE_DOMINANT_PERIOD" in data.keys():
+        data = data.rename({"WAVE_DOMINANT_PERIOD": "dominant_wave_period"})
+    if "WAVE_SIGNIFICANT_HEIGHT" in data.keys():
+        data = data.rename({"WAVE_SIGNIFICANT_HEIGHT": "significant_wave_height"})
 
     if masked_nan:
         masked_data = data.to_dataframe()
+        if "trajectory" in masked_data.columns:
+            masked_data.trajectory = masked_data.trajectory.astype(float)
+        if "time" in masked_data.columns:
+            masked_data = masked_data.set_index("time")
         masked_data = masked_data.where(masked_data < fill_value)
+        masked_data = masked_data.reset_index()
         masked_data = masked_data[masked_data.lon.notna() & masked_data.lat.notna()]
-        masked_data = masked_data.dropna(axis=0, thresh=3)
+        masked_data = masked_data.dropna(axis=0, thresh=4)
         data = masked_data.to_xarray()
         data = data.set_coords(["lat", "lon"])
 
@@ -376,6 +405,9 @@ def write_matching_data_to_file(matching_data: pd.DataFrame, matching_file: str)
     repo_path = fetch_repo_path()
     matching_data_path = f"{repo_path}{os.sep}" + f"{config['matching_data_folder']}{os.sep}" + f"SD{config['saildrone_number']}_{config['saildrone_year']}{os.sep}" + f"{config['satellite_product']}"
 
+    if not os.path.isdir(matching_data_path):
+        os.mkdir(matching_data_path)
+
     current_csv = f"{matching_data_path}{os.sep}{matching_file.split('.')[0]}.csv"
     if not os.path.isfile(current_csv):
         matching_data.to_csv(current_csv, index=False)
@@ -391,17 +423,13 @@ def read_matching_data_from_file(join_swaths: bool = False):
 
     match_data = []
     for fl in match_fls:
-        data = pd.read_csv(f"{match_path}/{fl}")
-        data.sd_time = pd.to_datetime(data.sd_time, format="%Y-%m-%d %H:%M:%S")
-        data.st_time = pd.to_datetime(data.st_time, format="%Y-%m-%d %H:%M:%S")
+        data = read_matching_data_from_file_product(filename=f"{match_path}/{fl}")
         match_data.append(data)
     
     if join_swaths:
         match_data = pd.concat(match_data)
 
     return match_data
-
-
 
 
 
@@ -477,4 +505,56 @@ def read_ASCAT(filename: str, masked_nan: bool = False) -> xr.DataArray:
         data = data.set_coords(["lat", "lon"])
 
 
+    return data
+
+
+
+def get_matching_filenames_across_saildrones(product=str):
+    config = read_config()
+    repo_path = fetch_repo_path()
+    match_path = f"{repo_path}{os.sep}{config['matching_data_folder']}"
+    dirs = os.listdir(match_path)
+    fls = []
+    for dir in dirs:
+        tmp = os.listdir(f"{match_path}{os.sep}{dir}")
+        if product in tmp:
+            tmp = os.listdir(f"{match_path}{os.sep}{dir}{os.sep}{product}")
+            fls.append([f"{match_path}{os.sep}{dir}{os.sep}{product}{os.sep}{fl}" for fl in tmp])
+
+    return [i for j in fls for i in j]
+
+
+def get_sd_file_from_match_filename(filename: str):
+    config = read_config()
+    fn = filename.split(os.sep)
+    match_idx = fn.index(config["matching_data_folder"])
+    fn = fn[match_idx:]
+    sd_str = fn[1]
+    sd_number = sd_str.split("_")[0][2:]
+    sd_year = sd_str.split("_")[1]
+
+
+    return check_for_saildrone_data(sd_number=sd_number, sd_year=sd_year)
+
+
+def get_sat_file_from_match_filename(filename: str):
+    config = read_config()
+    fn = filename.split(os.sep)
+    match_idx = fn.index(config["matching_data_folder"])
+    fn = fn[match_idx:]
+    sat_str = fn[-1].split(".")[0]
+
+    sat_fls = check_for_satellite_data(product=config["satellite_product"])
+    sat_str = [fl for fl in sat_fls if sat_str in fl][0]
+
+    return sat_str
+
+
+def read_matching_data_from_file_product(filename: str):
+
+
+    data = pd.read_csv(filename)
+    data.sd_time = pd.to_datetime(data.sd_time, format="%Y-%m-%d %H:%M:%S")
+    data.st_time = pd.to_datetime(data.st_time, format="%Y-%m-%d %H:%M:%S")
+    
     return data

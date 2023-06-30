@@ -3,14 +3,17 @@ import pandas as pd
 
 from calculations import great_circle_distance, subset_saildrone_time
 from datetime import datetime
+import importlib
+import read_write
+importlib.reload(read_write)
 from read_write import check_for_saildrone_data, check_for_satellite_data, read_config, read_in_range_log, read_not_in_range_log, read_saildrone, read_swath, write_matching_data_to_file, write_to_log
-
+import sys
 
 
 config = read_config()
 
 if not config["match_saildrone_satellite_swaths"]:
-    exit()
+    sys.exit()
 
 
 print(

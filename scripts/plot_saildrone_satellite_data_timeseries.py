@@ -1,10 +1,10 @@
 from read_write import check_for_saildrone_data, read_config, read_in_range_log, read_matching_data_from_file, read_saildrone
 from plot import plot_timeseries_swath_overlap
-
+import sys
 config = read_config()
 
 if not config["plot_saildrone_satellite_data_timeseries"]:
-    exit()
+    sys.exit()
 
 print(
     f"Plotting the swath coverage of {config['saildrone_number']} from "
@@ -29,7 +29,7 @@ saildrone_data = read_saildrone(filename=saildrone_filename, masked_nan=True, to
 match_data = read_matching_data_from_file(join_swaths=True)
 
 
-filename = f"SD{config['saildrone_number']}." + f"{config['saildrone_year']}_" + f"{config['satellite_product']}_timeseries_overlap.png"
+filename = f"SD{config['saildrone_number']}." + f"{config['saildrone_year']}_" + f"{config['satellite_product']}_timeseries_overlap_{config['saildrone_variable_name']}.png"
 plot_timeseries_swath_overlap(
     sd_data=saildrone_data,
     swath_match=match_data,

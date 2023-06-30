@@ -37,4 +37,9 @@ def match_saildrone_satellite_point(match_data: pd.DataFrame, sd_data: pd.DataFr
         st_pt = st_data.loc[st_idx]
         data.iloc[idx] = [row.sd_time, row.st_time, dist, sd_pt[sd_var], st_pt[st_var]]
 
+    data.sd_time = pd.to_datetime(data.sd_time)
+    data.st_time = pd.to_datetime(data.st_time)
+    data.dist = data.dist.astype(float)
+    data.sd_var = data.sd_var.astype(float)
+    data.st_var = data.st_var.astype(float)
     return data
