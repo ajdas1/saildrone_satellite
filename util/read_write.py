@@ -489,6 +489,7 @@ def read_SMAP(filename: str, masked_nan: bool = False) -> xr.DataArray:
 
     These are the instructions for coordinate renaming for
     SMAP - and what variables to drop.
+    Renames variables to "lat", "lon", "sst", "salinity_70km", "salinity_40km"
     """
     data = xr.open_dataset(
         filename,

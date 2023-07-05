@@ -39,3 +39,4 @@ In progress:
 
 Currently able to process the following datasets:
 - ASCAT
+- SMAP
