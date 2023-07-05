@@ -56,7 +56,6 @@ def create_data_folder_structure():
     Creates the directory structure needed for the later steps to run properly.
     It creates the data folders for:
     - satellite data
-    - shapefiles of satellite data
     - log files for swath overlap classification with saildrone
     - saildrone data
 
@@ -104,8 +103,7 @@ def register_new_dataset():
 
     Registering a product creates an empty directory for that dataset within
     data_satellite, where you put the downloaded data.
-    It also creates a directory for the processed shapefiles belonging to
-    that dataset.
+    
     If the directory already exists, nothing is done.
     """
     config = read_config()
