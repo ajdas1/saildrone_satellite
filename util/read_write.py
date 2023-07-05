@@ -11,7 +11,7 @@ class DS(Enum):
     Enumeration of all the supported datasets.
     """
 
-    ASCAT = "ASCAT"
+    ASCAT_METOPB = "ASCAT_METOPB"
     saildrone = "saildrone"
 
 
@@ -120,14 +120,6 @@ def register_new_dataset():
             + f"{product}"
         )
 
-    if not os.path.isdir(
-        f"{path}{os.sep}" + f"{config['shapefile_data_folder']}{os.sep}" + f"{product}"
-    ):
-        os.mkdir(
-            f"{path}{os.sep}"
-            + f"{config['shapefile_data_folder']}{os.sep}"
-            + f"{product}"
-        )
 
 
     if not os.path.isdir(
@@ -440,7 +432,7 @@ def read_swath(filename: str, masked_nan: bool = False, as_pd: bool = False) -> 
     repo_path = fetch_repo_path()
     product = config["satellite_product"]
 
-    if product == DS.ASCAT.value:
+    if product == DS.ASCAT_METOPB.value:
         current_filename = f"{repo_path}{os.sep}" + f"{config['satellite_data_folder']}{os.sep}" + f"{product}{os.sep}" + f"{filename}"
         data = read_ASCAT(filename=current_filename, masked_nan=masked_nan)
 
