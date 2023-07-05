@@ -12,6 +12,7 @@ class DS(Enum):
     """
 
     ASCAT_METOPB = "ASCAT_METOPB"
+    SMAP = "SMAP"
     saildrone = "saildrone"
 
 
@@ -435,6 +436,10 @@ def read_swath(filename: str, masked_nan: bool = False, as_pd: bool = False) -> 
     if product == DS.ASCAT_METOPB.value:
         current_filename = f"{repo_path}{os.sep}" + f"{config['satellite_data_folder']}{os.sep}" + f"{product}{os.sep}" + f"{filename}"
         data = read_ASCAT(filename=current_filename, masked_nan=masked_nan)
+    
+    if product == DS.SMAP.value:
+        current_filename = f"{repo_path}{os.sep}" + f"{config['satellite_data_folder']}{os.sep}" + f"{product}{os.sep}" + f"{filename}"
+        data = read_SMAP(filename=current_filename, masked_nan=masked_nan)
 
     if as_pd:
         data = data.to_dataframe().reset_index()
@@ -471,10 +476,45 @@ def read_ASCAT(filename: str, masked_nan: bool = False) -> xr.DataArray:
             "bs_distance",
         ],
     )
+    
+def read_SMAP(filename: str, masked_nan: bool = False) -> xr.DataArray:
+    """
+    data = read_SMAP(filename: str)
+
+    Arguments:
+    - filename: name of the file to be read in
+
+    Returns:
+    - data: an xarray containing data with coordinate awareness.
+
+    These are the instructions for coordinate renaming for
+    SMAP - and what variables to drop.
+    """
+    data = xr.open_dataset(
+        filename,
+        engine="netcdf4",
+        mask_and_scale=True,
+        decode_times=True,
+        decode_coords=True,
+        drop_variables=[
+            "solar_flux",
+            "rain",
+            "windir", 
+            "tbdw",
+            'tbup', 
+            "tran",
+            'sss_ref',
+            'winspd', 
+            'fice',
+            'gice',
+            'fland',
+            'gland', 
+        ],
+    )
 
     data = data.set_coords(["time"])
-    data.coords['lon'] = (data.coords['lon'] + 180) % 360 - 180
-
+    data.coords['cellon'] = (data.coords['cellon'] + 180) % 360 - 180
+    data = data.rename({'cellat':'lat', 'cellon':'lon', 'surtep':'sst', 'sss_smap':'salinity_70km', 'sss_smap_40km':'salinity_40km'})
     if masked_nan:
         data_df = data.to_dataframe().reset_index(drop=True)
         masked_data = data_df[data_df.lon.notna() & data_df.lat.notna()]

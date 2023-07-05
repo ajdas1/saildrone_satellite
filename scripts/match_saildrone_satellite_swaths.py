@@ -60,7 +60,10 @@ matching_points = []
 for num, fl in enumerate(satellite_filenames):
     start_time = datetime.now()
     print(f"     {num + 1}/{len(satellite_filenames)}: {fl}", end="")
-
+    import importlib
+    import read_write
+    importlib.reload(read_write)
+    from read_write import read_swath
     swath_data = read_swath(filename=fl, masked_nan=True, as_pd=True)
 
     saildrone_subset = subset_saildrone_time(
