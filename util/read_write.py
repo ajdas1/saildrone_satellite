@@ -69,9 +69,6 @@ def create_data_folder_structure():
     if not os.path.isdir(f"{path}{os.sep}" + f"{config['satellite_data_folder']}"):
         os.mkdir(f"{path}{os.sep}" + f"{config['satellite_data_folder']}")
 
-    if not os.path.isdir(f"{path}{os.sep}" + f"{config['shapefile_data_folder']}"):
-        os.mkdir(f"{path}{os.sep}" + f"{config['shapefile_data_folder']}")
-
     if not os.path.isdir(f"{path}{os.sep}" + f"{config['log_data_folder']}"):
         os.mkdir(f"{path}{os.sep}" + f"{config['log_data_folder']}")
 
@@ -94,16 +91,6 @@ def create_data_folder_structure():
         ):
             os.mkdir(
                 f"{path}{os.sep}" + f"{config['saildrone_data_folder']}{os.sep}" + "nc"
-            )
-        if not os.path.isdir(
-            f"{path}{os.sep}"
-            + f"{config['saildrone_data_folder']}{os.sep}"
-            + f"shapefile"
-        ):
-            os.mkdir(
-                f"{path}{os.sep}"
-                + f"{config['saildrone_data_folder']}{os.sep}"
-                + f"shapefile"
             )
 
 
