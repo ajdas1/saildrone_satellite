@@ -50,6 +50,11 @@ filename = (
     + f"{config['satellite_product']}_timeseries_overlap_"
     + f"{config['saildrone_variable_name']}.png"
 )
+import importlib
+import plot
+importlib.reload(plot)
+from plot import plot_timeseries_swath_overlap
+
 plot_timeseries_swath_overlap(
-    sd_data=saildrone_data, swath_match=match_data, filename=filename
+    sd_data=saildrone_data, swath_match=match_data, filename=filename, y_min=30, y_max=40
 )

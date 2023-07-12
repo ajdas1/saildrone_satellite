@@ -12,6 +12,11 @@ from read_write import (
     read_swath,
 )
 
+import importlib
+import calculations
+importlib.reload(calculations)
+from calculations import match_saildrone_satellite_point, round_coordinates
+
 
 config = read_config()
 sd_var = config["saildrone_variable_name"]
@@ -92,6 +97,6 @@ if len(combined) > 0:
         mean_pts=mean,
         nearest_pts=nearest,
         filename=filename,
-        axmin=0,
-        axmax=20,
+        axmin=30,
+        axmax=40,
     )

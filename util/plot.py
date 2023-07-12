@@ -17,7 +17,7 @@ from cartopy.mpl.gridliner import LONGITUDE_FORMATTER, LATITUDE_FORMATTER
 from typing import List
 
 
-def plot_timeseries_swath_overlap(sd_data: pd.DataFrame, swath_match: pd.DataFrame, filename: str):
+def plot_timeseries_swath_overlap(sd_data: pd.DataFrame, swath_match: pd.DataFrame, filename: str, y_min=None, y_max=None):
 
     config = read_config()
     savedir = f"{fetch_repo_path()}{os.sep}{config['figure_data_folder']}"
@@ -52,6 +52,8 @@ def plot_timeseries_swath_overlap(sd_data: pd.DataFrame, swath_match: pd.DataFra
             axes[mon].set_xticks(np.arange(1, sd_sub.tmfmt.max(), 1), minor=True)
             axes[mon].set_xticks(np.arange(1, sd_sub.tmfmt.max(), 5), minor=False)
             axes[mon].set_xlim(1, 32)
+            if y_min:
+                axes[mon].set_ylim(y_min, y_max)
             axes[mon].set_title(f"SD: {config['saildrone_number']} ({config['saildrone_year']}); Swath: {config['satellite_product']}; Variable: {config['saildrone_variable_name']}; Month: {month}")
 
 

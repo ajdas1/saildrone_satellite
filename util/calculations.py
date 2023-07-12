@@ -33,7 +33,7 @@ def great_circle_distance(x) -> float:
 def round_coordinates(data: pd.DataFrame, sig_fig: int = 2, vars: list = ["lat", "lon"]) -> pd.DataFrame:
     round_factor = 10**sig_fig
     for var in vars:
-        data[var] = np.round(data[var]*round_factor)/round_factor
+        data[var] = np.round(data[var]*round_factor).astype(int)/round_factor
     
     return data
 
