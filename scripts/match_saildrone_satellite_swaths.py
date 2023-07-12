@@ -74,6 +74,7 @@ for num, fl in enumerate(satellite_filenames):
     swath_data = read_swath(filename=fl, masked_nan=True, as_pd=True)
     if len(swath_data) == 0:
         write_to_log(filename=fl, in_range=False)
+        print()
         continue
 
     saildrone_subset = subset_saildrone_time(
@@ -83,6 +84,7 @@ for num, fl in enumerate(satellite_filenames):
     )
     if len(saildrone_subset) == 0:
         write_to_log(filename=fl, in_range=False)
+        print()
         continue
 
     sd_extrema = get_saildrone_position_extrema(
@@ -96,6 +98,7 @@ for num, fl in enumerate(satellite_filenames):
     ]
     if len(swath_data) == 0:
         write_to_log(filename=fl, in_range=False)
+        print()
         continue
 
     sd_patch_swath = []
@@ -119,6 +122,7 @@ for num, fl in enumerate(satellite_filenames):
 
         if len(saildrone_patch) == 0:
             write_to_log(filename=fl, in_range=False)
+            print()
             continue
 
         points = pd.DataFrame(
@@ -166,6 +170,7 @@ for num, fl in enumerate(satellite_filenames):
         write_matching_data_to_file(matching_data=swath_points, matching_file=fl)
     else:
         write_to_log(filename=fl, in_range=False)
+        print()
 
 
 # _ = sort_log_file(in_range=True)
