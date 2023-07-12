@@ -62,7 +62,8 @@ def plot_timeseries_swath_overlap(sd_data: pd.DataFrame, swath_match: pd.DataFra
 
 
 def plot_scatterplot_overlap(combined_pts: pd.DataFrame, mean_pts: pd.DataFrame, nearest_pts: pd.DataFrame, filename: str, axmin: float = 0, axmax: float = 20, linreg: bool = True):
-
+    axmin = 0
+    axmax = np.ceil(max(combined_pts.sd_var.max(), combined_pts.st_var.max())+2)
     config = read_config()
     savedir = f"{fetch_repo_path()}{os.sep}{config['figure_data_folder']}"
     fig = plt.figure(figsize = (12, 4.5))
@@ -155,7 +156,7 @@ def set_cartopy_projection_atlantic(
 
 
 
-def plot_matching_point_locations(match_data: list, sd_fls: list, matching_fls: list, extent: list = [-100, -50, 10, 40], filename: str = "test.png", title: str = ""):
+def plot_matching_point_locations(match_data: list, sd_fls: list, extent: list = [-100, -50, 10, 40], filename: str = "test.png", title: str = ""):
 
     config = read_config()
     savedir = f"{fetch_repo_path()}{os.sep}{config['figure_data_folder']}"
@@ -165,9 +166,13 @@ def plot_matching_point_locations(match_data: list, sd_fls: list, matching_fls: 
     fig = plt.figure(figsize = (10, 6))
     ax = fig.add_subplot(111, projection=proj)
 
-    for nmatch in range(len(matching_fls)):
-        sd_col = unique_sd_files.index(sd_fls[nmatch])
-        ax.plot([match_data[nmatch].sd_lon, match_data[nmatch].st_lon], [match_data[nmatch].sd_lat, match_data[nmatch].st_lat], c=cols[sd_col], lw=.5)
+    for sdfl in sd_fls:
+        sd_col = unique_sd_files.index(sdfl)
+        match_data_sd = match_data[sdfl]
+        if len(match_data_sd) == 0:
+            continue
+        for swth in range(len(match_data_sd)):
+            ax.plot([match_data_sd[swth].sd_lon, match_data_sd[swth].st_lon], [match_data_sd[swth].sd_lat, match_data_sd[swth].st_lat], c=cols[sd_col], lw=.5)
 
     for col in range(len(cols)):
         ax.plot([0, 0], [0, 1], c=cols[col], label=unique_sd_files[col][:11])

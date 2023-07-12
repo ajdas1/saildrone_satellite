@@ -1,6 +1,9 @@
 import sys
 
 from plot import plot_timeseries_swath_overlap
+import importlib
+import read_write
+importlib.reload(read_write)
 from read_write import (
     check_for_saildrone_data,
     read_config,

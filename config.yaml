@@ -13,7 +13,7 @@ satellite_variable_name: wind_speed
 
 # saildrone setup
 saildrone_year: 2021
-saildrone_number: 1031
+saildrone_number: 1060
 saildrone_time_tolerance_min: 2
 saildrone_distance_tolerance_km: 50
 saildrone_variable_name: wind_speed

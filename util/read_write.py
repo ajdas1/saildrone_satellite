@@ -2,6 +2,7 @@ import os
 import pandas as pd
 import xarray as xr
 import yaml
+import numpy as np
 
 from enum import Enum
 
@@ -308,17 +309,30 @@ def read_saildrone(filename: str, masked_nan: bool = False, fill_value: float = 
         data = data.rename({"WAVE_DOMINANT_PERIOD": "dominant_wave_period"})
     if "WAVE_SIGNIFICANT_HEIGHT" in data.keys():
         data = data.rename({"WAVE_SIGNIFICANT_HEIGHT": "significant_wave_height"})
+    if "WATER_CURRENT_DIRECTION_MEAN" in data.keys():
+        data = data.rename({"WATER_CURRENT_DIRECTION_MEAN": "current_direction"})
+    if "WATER_CURRENT_SEED_MEAN" in data.keys():
+        data = data.rename({"WATER_CURRENT_SPEED_MEAN": "current_speed"})
+    if "trajectory" in data.variables.keys():
+        data = data.drop(labels="trajectory")
 
     if masked_nan:
         masked_data = data.to_dataframe()
-        if "trajectory" in masked_data.columns:
-            masked_data.trajectory = masked_data.trajectory.astype(float)
         if "time" in masked_data.columns:
             masked_data = masked_data.set_index("time")
         masked_data = masked_data.where(masked_data < fill_value)
         masked_data = masked_data.reset_index()
         masked_data = masked_data[masked_data.lon.notna() & masked_data.lat.notna()]
         masked_data = masked_data.dropna(axis=0, thresh=4)
+        if "wind_speed" not in masked_data.columns:
+            masked_data["wind_speed"] = np.nan
+        if "wind_direction" not in masked_data.columns:
+            masked_data["wind_direction"] = np.nan
+        
+        if ("2021" in filename) and ("1060" in filename):
+            masked_data["wind_speed"].iloc[42000:] = np.nan
+            masked_data["wind_direction"].iloc[42000:] = np.nan
+
         data = masked_data.to_xarray()
         data = data.set_coords(["lat", "lon"])
 
@@ -537,3 +551,42 @@ def read_matching_data_from_file_product(filename: str):
     data.st_time = pd.to_datetime(data.st_time, format="%Y-%m-%d %H:%M:%S")
     
     return data
+
+
+def sort_log_file(in_range: bool = True):
+
+    config = read_config()
+    path = fetch_repo_path()
+    if in_range:
+        log_path = (
+            f"{path}{os.sep}"
+            + f"{config['log_data_folder']}{os.sep}"
+            + f"saildrone_{config['saildrone_number']}_"
+            + f"{config['saildrone_year']}_"
+            + f"{config['satellite_product']}_"
+            + f"swath_in_range_"
+            + f"{config['saildrone_time_tolerance_min']}min_"
+            + f"{config['saildrone_distance_tolerance_km']}km"
+            + ".txt"
+        )
+    else:
+        log_path = (
+            f"{path}{os.sep}"
+            + f"{config['log_data_folder']}{os.sep}"
+            + f"saildrone_{config['saildrone_number']}_"
+            + f"{config['saildrone_year']}_"
+            + f"{config['satellite_product']}_"
+            + f"swath_not_in_range_"
+            + f"{config['saildrone_time_tolerance_min']}min_"
+            + f"{config['saildrone_distance_tolerance_km']}km"
+            + ".txt"
+        )
+
+    fls = sorted(read_in_range_log())
+    with open(log_path, "w") as file:
+        for line in fls:
+            file.write(line + "\n")
+    
+    return log_path
+    
+

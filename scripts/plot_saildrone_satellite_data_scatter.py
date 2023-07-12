@@ -20,6 +20,12 @@ st_var = config["satellite_variable_name"]
 if not config["plot_saildrone_satellite_data_scatter"]:
     sys.exit()
 
+print(
+    f"Plotting the scatterplot of {config['saildrone_number']} from "
+    + f"{config['saildrone_year']} to "
+    + f"{config['satellite_product']} satellite swaths."
+)
+
 satellite_filenames = read_in_range_log()
 if len(satellite_filenames) == 0:
     print(
