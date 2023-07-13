@@ -50,7 +50,7 @@ def read_config() -> dict:
     return config
 
 
-def create_data_folder_structure():
+def create_data_folder_structure(config: dict):
     """
     create_data_folder_structure()
 
@@ -66,7 +66,6 @@ def create_data_folder_structure():
     under filename setup.
     If the directories already exist, nothing is done.
     """
-    config = read_config()
     path = fetch_repo_path()
 
     if not os.path.isdir(f"{path}{os.sep}" + f"{config['satellite_data_folder']}"):
