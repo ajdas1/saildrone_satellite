@@ -1,53 +1,33 @@
-
-import os
 import pandas as pd
 import sys
+import importlib
+import calculations
 
+importlib.reload(calculations)
 from calculations import (
     great_circle_distance,
-    match_saildrone_satellite_point,
     subset_saildrone_time,
     get_saildrone_position_extrema,
 )
 from datetime import datetime
-from plot import plot_matching_point_locations, plot_scatterplot_overlap, plot_timeseries_swath_overlap
+import read_write
+import importlib
+
+importlib.reload(read_write)
 from read_write import (
     check_for_saildrone_data,
     check_for_satellite_data,
-    create_data_folder_structure,
-    DS,
-    fetch_repo_path,
-    get_sd_file_from_match_filename,
-    get_sat_file_from_match_filename,
     read_config,
     read_in_range_log,
-    read_matching_data_from_file,
-    read_matching_data_from_file_product, 
     read_not_in_range_log,
     read_saildrone,
     read_swath,
-    register_new_dataset,
     write_matching_data_to_file,
     write_to_log,
 )
 
 
-
-
 config = read_config()
-
-# create dir structure (in case something is missing)
-create_data_folder_structure(config=config)
-
-# register a new dataset (in case not registered yet)
-print(f"Working on dataset: {config['satellite_product']}")
-register_new_dataset(config=config)
-supported_datasets = [e.value for e in DS]
-if config["satellite_product"] not in supported_datasets:
-    print("     The processing for this dataset has not yet been implemented.")
-    print("     You will need to add a processing step before continuing.")
-    sys.exit()
-
 
 if not config["match_saildrone_satellite_swaths"]:
     sys.exit()
@@ -59,11 +39,17 @@ print(
     + f"{config['satellite_product']} satellite swaths."
 )
 
-saildrone_filename = check_for_saildrone_data(config=config)
+saildrone_filename = check_for_saildrone_data(
+    sd_number=config["saildrone_number"],
+    sd_year=config["saildrone_year"],
+    format=".nc",
+)
 
-satellite_filenames = check_for_satellite_data(config=config, append_datadir=False)
-fls_in_range = read_in_range_log(config=config)
-fls_not_in_range = read_not_in_range_log(config=config)
+satellite_filenames = check_for_satellite_data(
+    product=config["satellite_product"], append_datadir=False
+)
+fls_in_range = read_in_range_log()
+fls_not_in_range = read_not_in_range_log()
 satellite_filenames = [
     fl
     for fl in satellite_filenames
@@ -72,11 +58,11 @@ satellite_filenames = [
 
 if len(satellite_filenames) == 0:
     print("All the satellite swaths have already been compared to this saildrone. ")
-    sys.exit()
+    exit()
 
 
 saildrone_data = read_saildrone(
-    filename=saildrone_filename, config=config, masked_nan=True, to_pd=True
+    filename=saildrone_filename, masked_nan=True, to_pd=True
 )
 
 
@@ -84,13 +70,11 @@ filenames = []
 matching_points = []
 for num, fl in enumerate(satellite_filenames):
     start_time = datetime.now()
-    print(f"     {num + 1}/{len(satellite_filenames)}: {fl}", end="")
-    swath_data = read_swath(filename=fl, config=config, masked_nan=True, as_pd=True)
+    swath_data = read_swath(filename=fl, masked_nan=True, as_pd=True)
     if len(swath_data) == 0:
-        write_to_log(filename=fl, config=config, in_range=False)
+        write_to_log(filename=fl, in_range=False)
         print()
         continue
-
 
     saildrone_subset = subset_saildrone_time(
         sd_data=saildrone_data,
@@ -98,7 +82,7 @@ for num, fl in enumerate(satellite_filenames):
         end_time=swath_data.time.iloc[-1],
     )
     if len(saildrone_subset) == 0:
-        write_to_log(filename=fl, config=config, in_range=False)
+        write_to_log(filename=fl, in_range=False)
         print()
         continue
 
@@ -112,10 +96,13 @@ for num, fl in enumerate(satellite_filenames):
         & (swath_data.lat <= sd_extrema["latmax"])
     ]
     if len(swath_data) == 0:
-        write_to_log(filename=fl, config=config, in_range=False)
+        write_to_log(filename=fl, in_range=False)
         print()
         continue
 
+    sd_patch_swath = []
+    st_patch_swath = []
+    dist_patch_swath = []
 
     tmp = swath_data.groupby("time")
     satellite_patches = [
@@ -133,6 +120,8 @@ for num, fl in enumerate(satellite_filenames):
         )
 
         if len(saildrone_patch) == 0:
+            write_to_log(filename=fl, in_range=False)
+            print()
             continue
 
         points = pd.DataFrame(
@@ -172,234 +161,16 @@ for num, fl in enumerate(satellite_filenames):
     dt = (end_time - start_time).total_seconds()
 
     if len(swath_points) > 0:
+        print(f"     {num + 1}/{len(satellite_filenames)}: {fl}", end="")
         print(f" ({dt:.2f} sec)", end="")
         swath_points = pd.concat(swath_points).reset_index(drop=True)
         print(f"; min distance: {swath_points.dist.min():.2f} km ")
-        write_to_log(filename=fl, config=config, in_range=True)
-        write_matching_data_to_file(matching_data=swath_points, matching_file=fl, config=config)
+        write_to_log(filename=fl, in_range=True)
+        write_matching_data_to_file(matching_data=swath_points, matching_file=fl)
     else:
-        write_to_log(filename=fl, config=config, in_range=False)
+        write_to_log(filename=fl, in_range=False)
         print()
 
 
-# _ = sort_log_file(config=config, in_range=True)
-# _ = sort_log_file(config=config, in_range=False)
-
-
-
-if not config["plot_saildrone_satellite_data_timeseries"]:
-    sys.exit()
-
-print(
-    f"Plotting the swath coverage of {config['saildrone_number']} from "
-    + f"{config['saildrone_year']} to "
-    + f"{config['satellite_product']} satellite swaths."
-)
-
-saildrone_filename = check_for_saildrone_data(config=config)
-
-
-satellite_filenames = read_in_range_log(config=config)
-if len(satellite_filenames) == 0:
-    print(
-        "     There are no satellite swaths that match the saildrone \nbased on the specified criteria."
-    )
-    sys.exit()
-
-
-saildrone_data = read_saildrone(
-    filename=saildrone_filename, config=config, masked_nan=True, to_pd=True
-)
-match_data = read_matching_data_from_file(config=config, join_swaths=True)
-
-
-filename = (
-    f"SD{config['saildrone_number']}."
-    + f"{config['saildrone_year']}_"
-    + f"{config['satellite_product']}_timeseries_overlap_"
-    + f"{config['saildrone_variable_name']}.png"
-)
-plot_timeseries_swath_overlap(
-    sd_data=saildrone_data, swath_match=match_data, filename=filename
-)
-
-
-
-
-
-sd_var = config["saildrone_variable_name"]
-st_var = config["satellite_variable_name"]
-
-if not config["plot_saildrone_satellite_data_scatter"]:
-    sys.exit()
-
-print(
-    f"Plotting the scatterplot of {config['saildrone_number']} from "
-    + f"{config['saildrone_year']} to "
-    + f"{config['satellite_product']} satellite swaths."
-)
-
-satellite_filenames = read_in_range_log(config=config)
-if len(satellite_filenames) == 0:
-    print(
-        "     There are no satellite swaths that match the saildrone \nbased on the specified criteria."
-    )
-    exit()
-saildrone_filename = check_for_saildrone_data(config=config)
-
-
-saildrone_data = read_saildrone(
-    filename=saildrone_filename, config=config, masked_nan=True, to_pd=True
-)
-saildrone_data = saildrone_data.set_index(["time", "lat", "lon"])
-
-match_data = read_matching_data_from_file(config=config, join_swaths=False)
-
-combined = []
-nearest = []
-mean = []
-for nfl, fl in enumerate(satellite_filenames):
-    swath_data = read_swath(filename=fl, config=config, masked_nan=True, as_pd=True)
-    swath_data = swath_data.set_index(["time", "lat", "lon"])
-    swath_match_data = match_data[nfl]
-
-    tmp = match_saildrone_satellite_point(
-        match_data=swath_match_data,
-        sd_data=saildrone_data,
-        st_data=swath_data,
-        sd_var=sd_var,
-        st_var=st_var,
-    )
-    tmp = tmp.dropna(axis=0, thresh=5)
-    if len(tmp) > 0:
-        combined.append(tmp)
-        mean.append(
-            tmp.groupby("sd_time", as_index=False).mean().reset_index(drop=True)
-        )
-        nearest.append(
-            tmp.loc[tmp.groupby("sd_time").dist.idxmin()].reset_index(drop=True)
-        )
-
-if len(combined) > 0:
-    combined = pd.concat(combined).reset_index(drop=True)
-    nearest = pd.concat(nearest).reset_index(drop=True)
-    mean = pd.concat(mean).reset_index(drop=True)
-
-    filename = (
-        f"SD{config['saildrone_number']}."
-        + f"{config['saildrone_year']}_"
-        + f"{config['satellite_product']}_scatter_overlap_"
-        + f"{config['saildrone_variable_name']}.png"
-    )
-    plot_scatterplot_overlap(
-        combined_pts=combined,
-        mean_pts=mean,
-        nearest_pts=nearest,
-        filename=filename,
-        axmin=0,
-        axmax=20,
-    )
-
-
-
-
-
-
-
-
-
-
-if not config["plot_all_saildrones_scatter"]:
-    sys.exit()
-
-print(
-    f"Plotting the scatterplot of all saildrones from "
-    + f"to {config['satellite_product']} satellite swaths."
-)
-
-
-sd_dirs = sorted([f"{fetch_repo_path()}/{config['matching_data_folder']}/{fl}" for fl in os.listdir(f"{fetch_repo_path()}/{config['matching_data_folder']}")])
-
-matching_fls = [[f"{sdir}/{config['satellite_product']}/{fl}" for fl in os.listdir(f"{sdir}/{config['satellite_product']}")] for sdir in sd_dirs]
-
-
-
-combined = []
-mean = []
-nearest = []
-matching_data = {}
-sd_files = []
-for sd_fls in matching_fls:
-    if len(sd_fls) == 0:
-        continue
-    sd_filename = get_sd_file_from_match_filename(filename=sd_fls[0], config=config)
-    sd_files.append(sd_filename)
-    sd_data = read_saildrone(filename=sd_filename, config=config, masked_nan=True, to_pd=True)
-    sd_data = sd_data.set_index(["time", "lat", "lon"])
-
-    tmp = []
-    for fl in sd_fls:
-        match_data = read_matching_data_from_file_product(filename=fl)
-        sat_filename = get_sat_file_from_match_filename(filename=fl, config=config)
-        sat_data = read_swath(filename=sat_filename, config=config, masked_nan=True, as_pd=True)
-        sat_data = sat_data.set_index(["time", "lat", "lon"])
-
-        comparison = match_saildrone_satellite_point(
-            match_data=match_data,
-            sd_data=sd_data,
-            st_data=sat_data,
-            sd_var=sd_var, 
-            st_var=st_var
-        )
-        comparison = comparison.dropna(thresh=5)
-
-        if len(comparison) == 0:
-            continue
-
-        tmp.append(match_data) 
-        combined.append(comparison)
-        mean.append(
-            comparison.groupby("sd_time", as_index=False).mean().reset_index(drop=True)
-        )
-        nearest.append(
-            comparison.loc[comparison.groupby("sd_time").dist.idxmin()].reset_index(drop=True)
-        )
-    matching_data[sd_filename] = tmp
-
-    
-combined = pd.concat(combined)
-nearest = pd.concat(nearest)
-mean = pd.concat(mean)
-combined = combined.sort_values(by=["sd_time", "st_time"]).reset_index(drop=True)
-nearest = nearest.sort_values(by=["sd_time", "st_time"]).reset_index(drop=True)
-mean = mean.sort_values(by=["sd_time", "st_time"]).reset_index(drop=True)
-
-
-
-
-filename = (
-    f"SD_"
-    + f"{config['satellite_product']}_scatter_overlap_"
-    + f"{config['saildrone_variable_name']}.png"
-)
-plot_scatterplot_overlap(
-    combined_pts=combined,
-    mean_pts=mean,
-    nearest_pts=nearest,
-    filename=filename,
-    axmin=0,
-    axmax=20,
-)
-
-filename = (
-    f"SD_"
-    + f"{config['satellite_product']}_matching_points_locations_"
-    + f"{config['saildrone_variable_name']}.png"
-)
-title = f"(SD - {config['satellite_product']}) matching point locations"
-plot_matching_point_locations(
-    match_data=matching_data,
-    sd_fls=sd_files,
-    filename=filename,
-    title=title,
-)
+# _ = sort_log_file(in_range=True)
+# _ = sort_log_file(in_range=False)
