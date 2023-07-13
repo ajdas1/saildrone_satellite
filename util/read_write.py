@@ -222,7 +222,7 @@ def read_in_range_log(config: dict) -> list:
     return files
 
 
-def read_not_in_range_log() -> list:
+def read_not_in_range_log(config: dict) -> list:
     """
     files = read_in_range_log()
 
@@ -230,7 +230,6 @@ def read_not_in_range_log() -> list:
     Returns:
     - files: a list of files within that log
     """
-    config = read_config()
     repo_path = fetch_repo_path()
     log_path = (
         f"{repo_path}{os.sep}"

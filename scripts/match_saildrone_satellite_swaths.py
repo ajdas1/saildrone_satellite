@@ -52,7 +52,7 @@ saildrone_filename = check_for_saildrone_data(config=config)
 
 satellite_filenames = check_for_satellite_data(config=config, append_datadir=False)
 fls_in_range = read_in_range_log(config=config)
-fls_not_in_range = read_not_in_range_log()
+fls_not_in_range = read_not_in_range_log(config=config)
 satellite_filenames = [
     fl
     for fl in satellite_filenames
