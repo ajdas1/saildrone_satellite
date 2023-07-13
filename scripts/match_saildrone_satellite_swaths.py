@@ -11,11 +11,13 @@ from read_write import (
     check_for_saildrone_data,
     check_for_satellite_data,
     create_data_folder_structure,
+    DS,
     read_config,
     read_in_range_log,
     read_not_in_range_log,
     read_saildrone,
     read_swath,
+    register_new_dataset,
     write_matching_data_to_file,
     write_to_log,
 )
@@ -26,9 +28,15 @@ config = read_config()
 # create dir structure (in case something is missing)
 create_data_folder_structure()
 
+# register a new dataset (in case not registered yet)
+print(f"Working on dataset: {config['satellite_product']}")
+register_new_dataset()
 
-
-
+supported_datasets = [e.value for e in DS]
+if config["satellite_product"] not in supported_datasets:
+    print("     The processing for this dataset has not yet been implemented.")
+    print("     You will need to add a processing step before continuing.")
+    sys.exit()
 
 
 
