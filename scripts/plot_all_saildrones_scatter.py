@@ -53,7 +53,7 @@ for sd_fls in matching_fls:
     sd_filename = get_sd_file_from_match_filename(sd_fls[0])
     sd_files.append(sd_filename)
     sd_data = round_coordinates(
-        data=read_saildrone(filename=sd_filename, masked_nan=True, to_pd=True)
+        data=read_saildrone(filename=sd_filename, config=config, masked_nan=True, to_pd=True)
     )
     sd_data = sd_data.set_index(["time", "lat", "lon"])
 

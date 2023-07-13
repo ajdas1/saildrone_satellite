@@ -36,7 +36,7 @@ saildrone_filename = check_for_saildrone_data(config=config)
 
 
 saildrone_data = read_saildrone(
-    filename=saildrone_filename, masked_nan=True, to_pd=True
+    filename=saildrone_filename, config=config, masked_nan=True, to_pd=True
 )
 saildrone_data = round_coordinates(data=saildrone_data).set_index(
     ["time", "lat", "lon"]

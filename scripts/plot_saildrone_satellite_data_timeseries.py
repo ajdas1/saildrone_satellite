@@ -35,7 +35,7 @@ if len(satellite_filenames) == 0:
 
 
 saildrone_data = read_saildrone(
-    filename=saildrone_filename, masked_nan=True, to_pd=True
+    filename=saildrone_filename, config=config, masked_nan=True, to_pd=True
 )
 match_data = read_matching_data_from_file(join_swaths=True)
 

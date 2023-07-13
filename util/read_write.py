@@ -224,7 +224,7 @@ def read_in_range_log(config: dict) -> list:
 
 def read_not_in_range_log(config: dict) -> list:
     """
-    files = read_in_range_log()
+    files = read_in_range_log(config)
 
 
     Returns:
@@ -250,9 +250,9 @@ def read_not_in_range_log(config: dict) -> list:
     return files
 
 
-def read_saildrone(filename: str, masked_nan: bool = False, fill_value: float = 9e36, to_pd: bool = False) -> xr.DataArray:
+def read_saildrone(filename: str, config: dict, masked_nan: bool = False, fill_value: float = 9e36, to_pd: bool = False) -> xr.DataArray:
     """
-    data = read_saildrone(filename: str, masked_nan: bool, fill_value: float)
+    data = read_saildrone(filename: str, config, masked_nan: bool, fill_value: float)
 
     Arguments:
     - filename: name of the file to be read in
@@ -266,7 +266,6 @@ def read_saildrone(filename: str, masked_nan: bool = False, fill_value: float = 
     These are the instructions for coordinate renaming for
     saildrone netcdf files - and what variables to drop.
     """
-    config = read_config()
     repo_path = fetch_repo_path()
     data = xr.open_dataset(
         f"{repo_path}{os.sep}"
@@ -300,7 +299,7 @@ def read_saildrone(filename: str, masked_nan: bool = False, fill_value: float = 
         data = data.rename({"WAVE_SIGNIFICANT_HEIGHT": "significant_wave_height"})
     if "WATER_CURRENT_DIRECTION_MEAN" in data.keys():
         data = data.rename({"WATER_CURRENT_DIRECTION_MEAN": "current_direction"})
-    if "WATER_CURRENT_SEED_MEAN" in data.keys():
+    if "WATER_CURRENT_SPEED_MEAN" in data.keys():
         data = data.rename({"WATER_CURRENT_SPEED_MEAN": "current_speed"})
     if "trajectory" in data.variables.keys():
         data = data.drop(labels="trajectory")
