@@ -52,7 +52,7 @@ def read_config() -> dict:
 
 def create_data_folder_structure(config: dict):
     """
-    create_data_folder_structure()
+    create_data_folder_structure(config)
 
     Returns: None
     Creates the directory structure needed for the later steps to run properly.
@@ -96,20 +96,18 @@ def create_data_folder_structure(config: dict):
             )
 
 
-def register_new_dataset():
+def register_new_dataset(config: dict):
     """
-    register_new_dataset(product: str)
+    register_new_dataset(config)
 
     Arguments:
-    - product - the satellite product to be registered.
-
+    - config - the dictionary from the config yaml file
     Registering a product creates an empty directory for that dataset within
     data_satellite, where you put the downloaded data.
     It also creates a directory for the processed shapefiles belonging to
     that dataset.
     If the directory already exists, nothing is done.
     """
-    config = read_config()
     path = fetch_repo_path()
     product = config['satellite_product']
 
@@ -121,8 +119,6 @@ def register_new_dataset():
             + f"{config['satellite_data_folder']}{os.sep}"
             + f"{product}"
         )
-
-
 
     if not os.path.isdir(
         f"{path}{os.sep}" + f"{config['matching_data_folder']}{os.sep}" + f"SD{config['saildrone_number']}_{config['saildrone_year']}"

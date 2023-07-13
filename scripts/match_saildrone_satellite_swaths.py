@@ -30,7 +30,7 @@ create_data_folder_structure(config=config)
 
 # register a new dataset (in case not registered yet)
 print(f"Working on dataset: {config['satellite_product']}")
-register_new_dataset()
+register_new_dataset(config=config)
 supported_datasets = [e.value for e in DS]
 if config["satellite_product"] not in supported_datasets:
     print("     The processing for this dataset has not yet been implemented.")
