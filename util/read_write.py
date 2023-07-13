@@ -1,8 +1,9 @@
 import os
+import numpy as np
 import pandas as pd
+import sys
 import xarray as xr
 import yaml
-import numpy as np
 
 from enum import Enum
 
@@ -30,7 +31,7 @@ def fetch_repo_path():
         return os.sep.join(path[: sdp_idx + 1])
     except:
         print("Please run inside repository.")
-        exit()
+        sys.exit()
 
 
 def read_config() -> dict:
