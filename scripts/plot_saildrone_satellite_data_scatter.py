@@ -48,7 +48,7 @@ combined = []
 nearest = []
 mean = []
 for nfl, fl in enumerate(satellite_filenames):
-    swath_data = read_swath(filename=fl, masked_nan=True, as_pd=True)
+    swath_data = read_swath(filename=fl, config=config, masked_nan=True, as_pd=True)
     swath_data = round_coordinates(data=swath_data).set_index(["time", "lat", "lon"])
     swath_match_data = match_data[nfl]
     swath_match_data = round_coordinates(

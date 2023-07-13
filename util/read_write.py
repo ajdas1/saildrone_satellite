@@ -411,9 +411,9 @@ def read_matching_data_from_file(config: dict, join_swaths: bool = False):
 
 
 
-def read_swath(filename: str, masked_nan: bool = False, as_pd: bool = False) -> xr.DataArray:
+def read_swath(filename: str, config: dict, masked_nan: bool = False, as_pd: bool = False) -> xr.DataArray:
     """
-    data = read_swath(filename: str)
+    data = read_swath(filename: str, config: dict)
 
     Arguments:
     - filename: name of the file to be read in
@@ -427,7 +427,6 @@ def read_swath(filename: str, masked_nan: bool = False, as_pd: bool = False) -> 
     It just needs to rename the latitude and longitude variables
     into lat and lon.
     """
-    config = read_config()
     repo_path = fetch_repo_path()
     product = config["satellite_product"]
 

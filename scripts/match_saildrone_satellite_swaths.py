@@ -73,7 +73,7 @@ filenames = []
 matching_points = []
 for num, fl in enumerate(satellite_filenames):
     start_time = datetime.now()
-    swath_data = read_swath(filename=fl, masked_nan=True, as_pd=True)
+    swath_data = read_swath(filename=fl, config=config, masked_nan=True, as_pd=True)
     if len(swath_data) == 0:
         write_to_log(filename=fl, config=config, in_range=False)
         print()
