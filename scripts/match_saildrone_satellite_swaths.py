@@ -75,7 +75,7 @@ for num, fl in enumerate(satellite_filenames):
     start_time = datetime.now()
     swath_data = read_swath(filename=fl, masked_nan=True, as_pd=True)
     if len(swath_data) == 0:
-        write_to_log(filename=fl, in_range=False)
+        write_to_log(filename=fl, config=config, in_range=False)
         print()
         continue
 
@@ -85,7 +85,7 @@ for num, fl in enumerate(satellite_filenames):
         end_time=swath_data.time.iloc[-1],
     )
     if len(saildrone_subset) == 0:
-        write_to_log(filename=fl, in_range=False)
+        write_to_log(filename=fl, config=config, in_range=False)
         print()
         continue
 
@@ -99,7 +99,7 @@ for num, fl in enumerate(satellite_filenames):
         & (swath_data.lat <= sd_extrema["latmax"])
     ]
     if len(swath_data) == 0:
-        write_to_log(filename=fl, in_range=False)
+        write_to_log(filename=fl, config=config, in_range=False)
         print()
         continue
 
@@ -123,7 +123,7 @@ for num, fl in enumerate(satellite_filenames):
         )
 
         if len(saildrone_patch) == 0:
-            write_to_log(filename=fl, in_range=False)
+            write_to_log(filename=fl, config=config, in_range=False)
             print()
             continue
 
@@ -168,10 +168,10 @@ for num, fl in enumerate(satellite_filenames):
         print(f" ({dt:.2f} sec)", end="")
         swath_points = pd.concat(swath_points).reset_index(drop=True)
         print(f"; min distance: {swath_points.dist.min():.2f} km ")
-        write_to_log(filename=fl, in_range=True)
+        write_to_log(filename=fl, config=config, in_range=True)
         write_matching_data_to_file(matching_data=swath_points, matching_file=fl)
     else:
-        write_to_log(filename=fl, in_range=False)
+        write_to_log(filename=fl, config=config, in_range=False)
         print()
 
 

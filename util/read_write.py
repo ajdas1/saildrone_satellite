@@ -330,9 +330,9 @@ def read_saildrone(filename: str, config: dict, masked_nan: bool = False, fill_v
     return data
 
 
-def write_to_log(filename: str, in_range: bool = True):
+def write_to_log(filename: str, config: dict, in_range: bool = True):
     """
-    write_in_range_to_log(filenames: list, in_range: bool)
+    write_in_range_to_log(filenames: list, config: dict, in_range: bool)
 
     Arguments:
     - filenames: list with filenames of swaths
@@ -348,7 +348,6 @@ def write_to_log(filename: str, in_range: bool = True):
     The maximum allowed distance is specified in the top-level config, in km
     (saildrone_distance_tolerance_km) - it looks within x km of the saildrone
     """
-    config = read_config()
     path = fetch_repo_path()
     if in_range:
         log_path = (
