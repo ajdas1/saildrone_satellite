@@ -169,11 +169,9 @@ def check_for_saildrone_data(config: dict):
         print("More than one matching saildrone file.")
 
 
-def check_for_satellite_data(
-    product: str, format: str = ".nc", append_datadir: bool = False
-) -> list[str]:
+def check_for_satellite_data(config: dict, append_datadir: bool = False) -> list[str]:
     """
-    files = check_for_product(datadir: str)
+    files = check_for_product(config)
 
     Arguments:
     - datadir: directory where data files are located
@@ -183,8 +181,8 @@ def check_for_satellite_data(
     - files: list of files in directory with provided format
     """
 
-    config = read_config()
     path = fetch_repo_path()
+    product = config["satellite_product"]
     product_path = (
         f"{path}{os.sep}" + f"{config['satellite_data_folder']}{os.sep}" + f"{product}"
     )
