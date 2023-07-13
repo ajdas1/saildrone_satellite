@@ -1,22 +1,16 @@
 import pandas as pd
 import sys
-import importlib
-import calculations
 
-importlib.reload(calculations)
 from calculations import (
     great_circle_distance,
     subset_saildrone_time,
     get_saildrone_position_extrema,
 )
 from datetime import datetime
-import read_write
-import importlib
-
-importlib.reload(read_write)
 from read_write import (
     check_for_saildrone_data,
     check_for_satellite_data,
+    create_data_folder_structure,
     read_config,
     read_in_range_log,
     read_not_in_range_log,
@@ -28,6 +22,15 @@ from read_write import (
 
 
 config = read_config()
+
+
+if not config["create_dir_structure"]:
+    sys.exit
+
+
+print("Creating the directory structure for processing.")
+create_data_folder_structure()
+
 
 if not config["match_saildrone_satellite_swaths"]:
     sys.exit()
