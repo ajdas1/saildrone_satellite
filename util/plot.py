@@ -68,9 +68,17 @@ def plot_timeseries_swath_overlap(sd_data: pd.DataFrame, swath_match: pd.DataFra
 
 
 
-def plot_scatterplot_overlap(combined_pts: pd.DataFrame, mean_pts: pd.DataFrame, nearest_pts: pd.DataFrame, filename: str, axmin: float = 0, axmax: float = 20, linreg: bool = True):
-    axmin = 0
-    axmax = np.ceil(max(combined_pts.sd_var.max(), combined_pts.st_var.max())+2)
+def plot_scatterplot_overlap(combined_pts: pd.DataFrame, mean_pts: pd.DataFrame, nearest_pts: pd.DataFrame, filename: str, lims: list = None, linreg: bool = True):
+
+
+    if lims is None:
+        dmin = combined_pts[["sd_var", "st_var"]].min().min()
+        dmax = combined_pts[["sd_var", "st_var"]].max().max()
+    else:
+        dmin = lims[0]
+        dmax = lims[1]
+    dran = dmax - dmin
+
     config = read_config()
     savedir = f"{fetch_repo_path()}{os.sep}{config['figure_data_folder']}"
     fig = plt.figure(figsize = (12, 4.5))
@@ -101,17 +109,20 @@ def plot_scatterplot_overlap(combined_pts: pd.DataFrame, mean_pts: pd.DataFrame,
             ax3.axline((0, reg_nearest.intercept_[0]), slope=reg_nearest.coef_[0][0], c="m", lw=1)
 
             txt = f"Slope: {reg_combined.coef_[0][0]:.2f}\nIntercept: {reg_combined.intercept_[0]:.2f}\nR" + u"$^2$" + f": {r2_score(combined_pts.sd_var, combined_pts.st_var):.2f}"
-            ax1.text(axmin+.1, axmax-.1, txt, ha="left", va="top")
+            ax1.text(np.floor(dmin-0.08*dran), np.ceil(dmax+0.08*dran), txt, ha="left", va="top")
             txt = f"Slope: {reg_mean.coef_[0][0]:.2f}\nIntercept: {reg_mean.intercept_[0]:.2f}\nR" + u"$^2$" + f": {r2_score(mean_pts.sd_var, mean_pts.st_var):.2f}"
-            ax2.text(axmin+.1, axmax-.1, txt, ha="left", va="top")
+            ax2.text(np.floor(dmin-0.08*dran), np.ceil(dmax+0.08*dran), txt, ha="left", va="top")
             txt = f"Slope: {reg_nearest.coef_[0][0]:.2f}\nIntercept: {reg_nearest.intercept_[0]:.2f}\nR" + u"$^2$" + f": {r2_score(nearest_pts.sd_var, nearest_pts.st_var):.2f}"
-            ax3.text(axmin+.1, axmax-.1, txt, ha="left", va="top")
+            ax3.text(np.floor(dmin-0.08*dran), np.ceil(dmax+0.08*dran), txt, ha="left", va="top")
 
     _ = plt.colorbar(f1, cax=cax, orientation="horizontal", label="Distance between SD and sat point (km)")
-    ax1.set_xticks(np.arange(0, 101, 5))
-    ax1.set_yticks(ax1.get_xticks())
-    ax1.set_xlim(axmin, axmax)
-    ax1.set_ylim(axmin, axmax)
+    ax1.set_xlim(np.floor(dmin-0.1*dran), np.ceil(dmax+0.1*dran))
+    ax1.set_ylim(np.floor(dmin-0.1*dran), np.ceil(dmax+0.1*dran))
+    ticks = ax1.get_xticks()
+    ax1.set_xticks(ticks)
+    ax1.set_yticks(ticks)
+    ax1.set_xlim(np.floor(dmin-0.1*dran), np.ceil(dmax+0.1*dran))
+    ax1.set_ylim(np.floor(dmin-0.1*dran), np.ceil(dmax+0.1*dran))
     ax1.set_title(f"All points (n={len(combined_pts)})")
     ax2.set_title(f"Mean satellite point (n={len(mean_pts)})")
     ax3.set_title(f"Nearest satellite point (n={len(nearest_pts)})")
@@ -163,9 +174,8 @@ def set_cartopy_projection_atlantic(
 
 
 
-def plot_matching_point_locations(match_data: list, sd_fls: list, extent: list = [-100, -50, 10, 40], filename: str = "test.png", title: str = ""):
+def plot_matching_point_locations(match_data: list, sd_fls: list, config: dict, extent: list = [-100, -50, 10, 40], filename: str = "test.png", title: str = ""):
 
-    config = read_config()
     savedir = f"{fetch_repo_path()}{os.sep}{config['figure_data_folder']}"
     unique_sd_files = sorted(list(set(sd_fls)))
     cols = plt.cm.brg(np.linspace(0, 1, len(unique_sd_files)))

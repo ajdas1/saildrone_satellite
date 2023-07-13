@@ -30,15 +30,21 @@ def great_circle_distance(x) -> float:
     return gc
 
 
-# def round_coordinates(data: pd.DataFrame, sig_fig: int = 2, vars: list = ["lat", "lon"]) -> pd.DataFrame:
-#     round_factor = 10**sig_fig
-#     for var in vars:
-#         data[var] = np.round(data[var]*round_factor)/round_factor
-    
-#     return data
 
+def match_saildrone_satellite_point(match_data: pd.DataFrame, sd_data: pd.DataFrame, st_data: pd.DataFrame, config: dict):
 
-def match_saildrone_satellite_point(match_data: pd.DataFrame, sd_data: pd.DataFrame, st_data: pd.DataFrame, sd_var: str, st_var: str):
+    sd_var = config["saildrone_variable_name"]
+    st_var = config["satellite_variable_name"]
+    try:
+        sd_data[sd_var].max()
+    except AttributeError:
+        print(f"     Variable {sd_var} does not exist in saildrone data.")
+        print(f"     Existing variables include \n{sd_data.columns}")
+    try:
+        st_data[st_var].max()
+    except AttributeError:
+        print(f"     Variable {st_var} does not exist in satellite data.")
+        print(f"     Existing variables include \n{st_data.columns}")
 
     data = pd.DataFrame([], columns=["sd_time", "st_time", "dist", "sd_var", "st_var"], index=range(len(match_data)))
     for idx, row in match_data.iterrows():

@@ -360,6 +360,8 @@ def read_saildrone(
             masked_data["wind_speed"] = np.nan
         if "wind_direction" not in masked_data.columns:
             masked_data["wind_direction"] = np.nan
+        else:
+            masked_data["wind_direction"] = (masked_data.wind_direction + 180) % 360
 
         if ("2021" in filename) and ("1060" in filename):
             masked_data["wind_speed"].iloc[42000:] = np.nan
@@ -540,7 +542,11 @@ def read_ASCAT(filename: str, masked_nan: bool = False) -> xr.DataArray:
 
     data = data.set_coords(["time"])
     data.coords["lon"] = (data.coords["lon"] + 180) % 360 - 180
-
+    data = data.rename(
+        {
+            "wind_dir": "wind_direction",
+        }
+    )
     if masked_nan:
         data_df = data.to_dataframe().reset_index(drop=True)
         masked_data = data_df[data_df.lon.notna() & data_df.lat.notna()]

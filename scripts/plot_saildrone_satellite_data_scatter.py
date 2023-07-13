@@ -56,8 +56,7 @@ if config["plot_saildrone_satellite_data_scatter"]:
             match_data=swath_match_data,
             sd_data=saildrone_data,
             st_data=swath_data,
-            sd_var=sd_var,
-            st_var=st_var,
+            config=config,
         )
         tmp = tmp.dropna(axis=0, thresh=5)
         if len(tmp) > 0:
@@ -85,7 +84,5 @@ if config["plot_saildrone_satellite_data_scatter"]:
             mean_pts=mean,
             nearest_pts=nearest,
             filename=filename,
-            axmin=0,
-            axmax=20,
         )
 

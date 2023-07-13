@@ -76,8 +76,7 @@ if config["plot_all_saildrones_scatter"]:
                 match_data=match_data,
                 sd_data=sd_data,
                 st_data=sat_data,
-                sd_var=sd_var,
-                st_var=st_var,
+                config=config,
             )
             comparison = comparison.dropna(thresh=5)
 
@@ -115,8 +114,6 @@ if config["plot_all_saildrones_scatter"]:
         mean_pts=mean,
         nearest_pts=nearest,
         filename=filename,
-        axmin=0,
-        axmax=20,
     )
 
     filename = (
@@ -128,6 +125,7 @@ if config["plot_all_saildrones_scatter"]:
     plot_matching_point_locations(
         match_data=matching_data,
         sd_fls=sd_files,
+        config=config,
         filename=filename,
         title=title,
     )
