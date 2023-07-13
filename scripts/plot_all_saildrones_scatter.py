@@ -39,7 +39,6 @@ sd_dirs = sorted([f"{fetch_repo_path()}/{config['matching_data_folder']}/{fl}" f
 
 matching_fls = [[f"{sdir}/{config['satellite_product']}/{fl}" for fl in os.listdir(f"{sdir}/{config['satellite_product']}")] for sdir in sd_dirs]
 
-# sd_files = [get_sd_file_from_match_filename(fl) for fl in matching_fls]
 
 
 combined = []
@@ -50,7 +49,7 @@ sd_files = []
 for sd_fls in matching_fls:
     if len(sd_fls) == 0:
         continue
-    sd_filename = get_sd_file_from_match_filename(sd_fls[0])
+    sd_filename = get_sd_file_from_match_filename(filename=sd_fls[0], config=config)
     sd_files.append(sd_filename)
     sd_data = round_coordinates(
         data=read_saildrone(filename=sd_filename, config=config, masked_nan=True, to_pd=True)

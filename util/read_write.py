@@ -138,7 +138,7 @@ def register_new_dataset(config: dict):
         )
 
 
-def check_for_saildrone_data(config: dict):
+def check_for_saildrone_data(config: dict, sd_number: int = None, sd_year: int = None):
     """
     files = check_for_saildrone_data(config)
 
@@ -154,10 +154,21 @@ def check_for_saildrone_data(config: dict):
     path = fetch_repo_path()
     sd_path = f"{path}{os.sep}" + f"{config['saildrone_data_folder']}{os.sep}" + "nc"
 
+    if sd_number:
+        sd_num = sd_number
+    else:
+        sd_num = config["saildrone_number"]
+    
+    if sd_year:
+        sd_yr = sd_year
+    else:
+        sd_yr = config["saildrone_year"]
+
+
     files = [
         fl
         for fl in os.listdir(sd_path)
-        if str(config["saildrone_number"]) in fl and str(config["saildrone_year"]) in fl and format in fl
+        if str(sd_num) in fl and str(sd_yr) in fl and format in fl
     ]
 
     if len(files) == 1:
@@ -392,7 +403,6 @@ def write_matching_data_to_file(matching_data: pd.DataFrame, matching_file: str,
         matching_data.to_csv(current_csv, index=False)
 
 
-
 def read_matching_data_from_file(config: dict, join_swaths: bool = False):
     repo_path = fetch_repo_path()
 
@@ -408,7 +418,6 @@ def read_matching_data_from_file(config: dict, join_swaths: bool = False):
         match_data = pd.concat(match_data)
 
     return match_data
-
 
 
 def read_swath(filename: str, config: dict, masked_nan: bool = False, as_pd: bool = False) -> xr.DataArray:
@@ -473,7 +482,18 @@ def read_ASCAT(filename: str, masked_nan: bool = False) -> xr.DataArray:
             "bs_distance",
         ],
     )
+
+    if masked_nan:
+        data_df = data.to_dataframe().reset_index(drop=True)
+        masked_data = data_df[data_df.lon.notna() & data_df.lat.notna()]
+        masked_data = masked_data.dropna(axis=0, thresh=4)
+        masked_data = masked_data.set_index("time")
+        data = masked_data.to_xarray()
+        data = data.set_coords(["lat", "lon"])
     
+    return data
+
+        
 def read_SMAP(filename: str, masked_nan: bool = False) -> xr.DataArray:
     """
     data = read_SMAP(filename: str)
@@ -524,24 +544,7 @@ def read_SMAP(filename: str, masked_nan: bool = False) -> xr.DataArray:
     return data
 
 
-
-def get_matching_filenames_across_saildrones(product=str):
-    config = read_config()
-    repo_path = fetch_repo_path()
-    match_path = f"{repo_path}{os.sep}{config['matching_data_folder']}"
-    dirs = os.listdir(match_path)
-    fls = []
-    for dir in dirs:
-        tmp = os.listdir(f"{match_path}{os.sep}{dir}")
-        if product in tmp:
-            tmp = os.listdir(f"{match_path}{os.sep}{dir}{os.sep}{product}")
-            fls.append([f"{match_path}{os.sep}{dir}{os.sep}{product}{os.sep}{fl}" for fl in tmp])
-
-    return [i for j in fls for i in j]
-
-
-def get_sd_file_from_match_filename(filename: str):
-    config = read_config()
+def get_sd_file_from_match_filename(filename: str, config: dict):
     fn = filename.split(os.sep)
     match_idx = fn.index(config["matching_data_folder"])
     fn = fn[match_idx:]
@@ -550,7 +553,7 @@ def get_sd_file_from_match_filename(filename: str):
     sd_year = sd_str.split("_")[1]
 
 
-    return check_for_saildrone_data(sd_number=sd_number, sd_year=sd_year)
+    return check_for_saildrone_data(config=config, sd_number=sd_number, sd_year=sd_year)
 
 
 def get_sat_file_from_match_filename(filename: str):
