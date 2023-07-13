@@ -23,13 +23,13 @@ from read_write import (
 
 config = read_config()
 
-
-if not config["create_dir_structure"]:
-    sys.exit
-
-
-print("Creating the directory structure for processing.")
+# create dir structure (in case something is missing)
 create_data_folder_structure()
+
+
+
+
+
 
 
 if not config["match_saildrone_satellite_swaths"]:
