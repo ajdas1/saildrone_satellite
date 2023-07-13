@@ -26,7 +26,7 @@ from read_write import (
 config = read_config()
 
 # create dir structure (in case something is missing)
-create_data_folder_structure()
+create_data_folder_structure(config=config)
 
 # register a new dataset (in case not registered yet)
 print(f"Working on dataset: {config['satellite_product']}")
