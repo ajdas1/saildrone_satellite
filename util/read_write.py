@@ -515,20 +515,20 @@ def read_SMAP(filename: str, masked_nan: bool = False) -> xr.DataArray:
             "rain",
             "windir", 
             "tbdw",
-            'tbup', 
+            "tbup", 
             "tran",
-            'sss_ref',
-            'winspd', 
-            'fice',
-            'gice',
-            'fland',
-            'gland', 
+            "sss_ref",
+            "winspd", 
+            "fice",
+            "gice",
+            "fland",
+            "gland", 
         ],
     )
 
     data = data.set_coords(["time"])
-    data.coords['cellon'] = (data.coords['cellon'] + 180) % 360 - 180
-    data = data.rename({'cellat':'lat', 'cellon':'lon', 'surtep':'sst', 'sss_smap':'salinity_70km', 'sss_smap_40km':'salinity_40km'})
+    data.coords["cellon"] = (data.coords["cellon"] + 180) % 360 - 180
+    data = data.rename({"cellat":"lat", "cellon":"lon", "surtep":"sst", "sss_smap":"salinity_70km", "sss_smap_40km":"salinity_40km"})
     if masked_nan:
         data_df = data.to_dataframe().reset_index(drop=True)
         masked_data = data_df[data_df.lon.notna() & data_df.lat.notna()]
