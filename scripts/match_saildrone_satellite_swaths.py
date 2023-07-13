@@ -175,5 +175,5 @@ for num, fl in enumerate(satellite_filenames):
         print()
 
 
-# _ = sort_log_file(in_range=True)
-# _ = sort_log_file(in_range=False)
+# _ = sort_log_file(config=config, in_range=True)
+# _ = sort_log_file(config=config, in_range=False)

@@ -569,8 +569,6 @@ def get_sat_file_from_match_filename(filename: str, config: dict):
 
 
 def read_matching_data_from_file_product(filename: str):
-
-
     data = pd.read_csv(filename)
     data.sd_time = pd.to_datetime(data.sd_time, format="%Y-%m-%d %H:%M:%S")
     data.st_time = pd.to_datetime(data.st_time, format="%Y-%m-%d %H:%M:%S")
@@ -578,9 +576,8 @@ def read_matching_data_from_file_product(filename: str):
     return data
 
 
-def sort_log_file(in_range: bool = True):
+def sort_log_file(config: dict, in_range: bool = True):
 
-    config = read_config()
     path = fetch_repo_path()
     if in_range:
         log_path = (
