@@ -23,11 +23,7 @@ print(
     + f"{config['satellite_product']} satellite swaths."
 )
 
-saildrone_filename = check_for_saildrone_data(
-    sd_number=config["saildrone_number"],
-    sd_year=config["saildrone_year"],
-    format=".nc",
-)
+saildrone_filename = check_for_saildrone_data(config=config)
 
 
 satellite_filenames = read_in_range_log()

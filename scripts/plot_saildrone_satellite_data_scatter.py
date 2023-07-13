@@ -32,11 +32,7 @@ if len(satellite_filenames) == 0:
         "     There are no satellite swaths that match the saildrone \nbased on the specified criteria."
     )
     exit()
-saildrone_filename = check_for_saildrone_data(
-    sd_number=config["saildrone_number"],
-    sd_year=config["saildrone_year"],
-    format=".nc",
-)
+saildrone_filename = check_for_saildrone_data(config=config)
 
 
 saildrone_data = read_saildrone(

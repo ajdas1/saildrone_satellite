@@ -139,14 +139,12 @@ def register_new_dataset(config: dict):
         )
 
 
-def check_for_saildrone_data(sd_number: int, sd_year: int, format: str = ".nc"):
+def check_for_saildrone_data(config: dict):
     """
-    files = check_for_saildrone_data(sd_number: int, sd_year: int, format: str = ".nc")
+    files = check_for_saildrone_data(config)
 
     Arguments:
-    - sd_number: saildrone number.
-    - sd_year: saildrone year.
-    - format: format of saildrone data.
+    - config yaml dictionary
 
     Returns:
     - the filename for the saildrone data.
@@ -154,20 +152,19 @@ def check_for_saildrone_data(sd_number: int, sd_year: int, format: str = ".nc"):
     Currently, only .nc format is supported, and the file name should
     contain the saildrone year and number.
     """
-    config = read_config()
     path = fetch_repo_path()
     sd_path = f"{path}{os.sep}" + f"{config['saildrone_data_folder']}{os.sep}" + "nc"
 
     files = [
         fl
         for fl in os.listdir(sd_path)
-        if str(sd_number) in fl and str(sd_year) in fl and format in fl
+        if str(config["saildrone_number"]) in fl and str(config["saildrone_year"]) in fl and format in fl
     ]
 
     if len(files) == 1:
         return files[0]
     elif len(files) == 0:
-        print("No saildrone data file.")
+        print("No saildrone data file. Filename should contain saildrone number and year.")
     else:
         print("More than one matching saildrone file.")
 
