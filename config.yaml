@@ -9,17 +9,17 @@ scripts_folder: scripts
 
 # satellite dataset setup - resolution should be rounded up
 satellite_product: ASCAT_METOPB
-satellite_variable_name: wind_speed
+satellite_variable_name: wind_direction
 
 # saildrone setup
 saildrone_year: 2022
-saildrone_number: 1084
+saildrone_number: 1031
 saildrone_time_tolerance_min: 2
 saildrone_distance_tolerance_km: 50
-saildrone_variable_name: wind_speed
+saildrone_variable_name: wind_direction
 
 # processing steps
-match_saildrone_satellite_swaths: True
+match_saildrone_satellite_swaths: False
 plot_saildrone_satellite_data_timeseries: True
-plot_saildrone_satellite_data_scatter: True
-plot_all_saildrones_scatter: True
+plot_saildrone_satellite_data_scatter: False
+plot_all_saildrones_scatter: False

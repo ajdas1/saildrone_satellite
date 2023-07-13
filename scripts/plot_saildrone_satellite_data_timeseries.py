@@ -44,7 +44,7 @@ if config["plot_saildrone_satellite_data_timeseries"]:
         + f"{config['saildrone_variable_name']}.png"
     )
     plot_timeseries_swath_overlap(
-        sd_data=saildrone_data, swath_match=match_data, filename=filename
+        sd_data=saildrone_data, swath_match=match_data, filename=filename, config=config
     )
 
 

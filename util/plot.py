@@ -17,11 +17,17 @@ from cartopy.mpl.gridliner import LONGITUDE_FORMATTER, LATITUDE_FORMATTER
 from typing import List
 
 
-def plot_timeseries_swath_overlap(sd_data: pd.DataFrame, swath_match: pd.DataFrame, filename: str):
+def plot_timeseries_swath_overlap(sd_data: pd.DataFrame, swath_match: pd.DataFrame, filename: str, config: dict, ylims: list = None):
 
-    config = read_config()
     savedir = f"{fetch_repo_path()}{os.sep}{config['figure_data_folder']}"
     sd_months = sd_data.time.dt.month.unique()
+    if ylims is None:
+        dmin = sd_data.min()[config["saildrone_variable_name"]]
+        dmax = sd_data.max()[config["saildrone_variable_name"]]
+    else:
+        dmin = ylims[0]
+        dmax = ylims[1]
+    dran = dmax - dmin
 
     fig = plt.figure(figsize=(12, len(sd_months)*3))
     gs = GridSpec(len(sd_months), 1)
@@ -46,12 +52,13 @@ def plot_timeseries_swath_overlap(sd_data: pd.DataFrame, swath_match: pd.DataFra
                 st_sub["sd_tmfmt"] = pd.to_timedelta(st_sub.st_time - start_of_month).dt.total_seconds() / 60 / 60 / 24 + 1
                 st_sub["st_tmfmt"] = st_sub.sd_tmfmt + st_sub.dt_tmfmt
                 for pt in range(len(st_sub)):
-                    axes[mon].axline((st_sub.sd_tmfmt.iloc[pt], 0), (st_sub.st_tmfmt.iloc[pt], 1), lw=.2, c="k")
+                    axes[mon].axline((st_sub.sd_tmfmt.iloc[pt], 0), (st_sub.st_tmfmt.iloc[pt], 10000), lw=.2, c="k")
 
             axes[mon].plot(sd_sub.tmfmt, sd_sub[config["saildrone_variable_name"]], ".", markersize=1)
             axes[mon].set_xticks(np.arange(1, sd_sub.tmfmt.max(), 1), minor=True)
             axes[mon].set_xticks(np.arange(1, sd_sub.tmfmt.max(), 5), minor=False)
             axes[mon].set_xlim(1, 32)
+            axes[mon].set_ylim(np.floor(dmin-0.1*dran), np.ceil(dmax+0.1*dran))
             axes[mon].set_title(f"SD: {config['saildrone_number']} ({config['saildrone_year']}); Swath: {config['satellite_product']}; Variable: {config['saildrone_variable_name']}; Month: {month}")
 
 
