@@ -24,6 +24,9 @@ def plot_timeseries_swath_overlap(sd_data: pd.DataFrame, swath_match: pd.DataFra
     if ylims is None:
         dmin = sd_data.min()[config["saildrone_variable_name"]]
         dmax = sd_data.max()[config["saildrone_variable_name"]]
+        if np.isnan(dmin):
+            dmin = 0
+            dmax = 1
     else:
         dmin = ylims[0]
         dmax = ylims[1]
