@@ -3,7 +3,7 @@ import sys
 import importlib
 import calculations
 importlib.reload(calculations)
-from calculations import match_saildrone_satellite_point, round_coordinates
+from calculations import match_saildrone_satellite_point
 import importlib
 import plot
 importlib.reload(plot)
@@ -51,19 +51,14 @@ for sd_fls in matching_fls:
         continue
     sd_filename = get_sd_file_from_match_filename(filename=sd_fls[0], config=config)
     sd_files.append(sd_filename)
-    sd_data = round_coordinates(
-        data=read_saildrone(filename=sd_filename, config=config, masked_nan=True, to_pd=True)
-    )
+    sd_data = read_saildrone(filename=sd_filename, config=config, masked_nan=True, to_pd=True)
     sd_data = sd_data.set_index(["time", "lat", "lon"])
 
     tmp = []
     for fl in sd_fls:
-        match_data = round_coordinates(
-            data=read_matching_data_from_file_product(filename=fl),
-            vars=["sd_lon", "sd_lat", "st_lon", "st_lat", "dist"],
-        )
+        match_data = read_matching_data_from_file_product(filename=fl)
         sat_filename = get_sat_file_from_match_filename(filename=fl, config=config)
-        sat_data = round_coordinates(data=read_swath(filename=sat_filename, config=config, masked_nan=True, as_pd=True))
+        sat_data = read_swath(filename=sat_filename, config=config, masked_nan=True, as_pd=True)
         sat_data = sat_data.set_index(["time", "lat", "lon"])
 
         comparison = match_saildrone_satellite_point(

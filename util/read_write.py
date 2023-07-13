@@ -162,7 +162,7 @@ def register_new_dataset(config: dict):
         )
 
 
-def check_for_saildrone_data(config: dict, sd_number: int = None, sd_year: int = None):
+def check_for_saildrone_data(config: dict, sd_number: str = None, sd_year: str = None):
     """
     files = check_for_saildrone_data(config)
 
@@ -178,12 +178,12 @@ def check_for_saildrone_data(config: dict, sd_number: int = None, sd_year: int =
     path = fetch_repo_path()
     sd_path = f"{path}{os.sep}" + f"{config['saildrone_data_folder']}{os.sep}" + "nc"
 
-    if sd_number:
+    if sd_number is not None:
         sd_num = sd_number
     else:
         sd_num = config["saildrone_number"]
 
-    if sd_year:
+    if sd_year is not None:
         sd_yr = sd_year
     else:
         sd_yr = config["saildrone_year"]
@@ -191,7 +191,7 @@ def check_for_saildrone_data(config: dict, sd_number: int = None, sd_year: int =
     files = [
         fl
         for fl in os.listdir(sd_path)
-        if str(sd_num) in fl and str(sd_yr) in fl and format in fl
+        if str(sd_num) in fl and str(sd_yr) in fl and ".nc" in fl
     ]
 
     if len(files) == 1:
@@ -223,7 +223,7 @@ def check_for_satellite_data(config: dict, append_datadir: bool = False) -> list
     )
 
     if os.path.isdir(product_path):
-        files = sorted([fl for fl in os.listdir(product_path) if format in fl])
+        files = sorted([fl for fl in os.listdir(product_path) if ".nc" in fl])
         if append_datadir:
             files = [f"{product_path}{os.sep}" + f"{fl}" for fl in files]
 
@@ -354,6 +354,8 @@ def read_saildrone(
         masked_data = masked_data.reset_index()
         masked_data = masked_data[masked_data.lon.notna() & masked_data.lat.notna()]
         masked_data = masked_data.dropna(axis=0, thresh=4)
+        masked_data["lat"] = masked_data["lat"].round(decimals=2)
+        masked_data["lon"] = masked_data["lon"].round(decimals=2)
         if "wind_speed" not in masked_data.columns:
             masked_data["wind_speed"] = np.nan
         if "wind_direction" not in masked_data.columns:
@@ -536,11 +538,16 @@ def read_ASCAT(filename: str, masked_nan: bool = False) -> xr.DataArray:
         ],
     )
 
+    data = data.set_coords(["time"])
+    data.coords["lon"] = (data.coords["lon"] + 180) % 360 - 180
+
     if masked_nan:
         data_df = data.to_dataframe().reset_index(drop=True)
         masked_data = data_df[data_df.lon.notna() & data_df.lat.notna()]
         masked_data = masked_data.dropna(axis=0, thresh=4)
         masked_data = masked_data.set_index("time")
+        masked_data["lat"] = masked_data["lat"].round(decimals=2)
+        masked_data["lon"] = masked_data["lon"].round(decimals=2)
         data = masked_data.to_xarray()
         data = data.set_coords(["lat", "lon"])
 
@@ -598,6 +605,8 @@ def read_SMAP(filename: str, masked_nan: bool = False) -> xr.DataArray:
         masked_data = data_df[data_df.lon.notna() & data_df.lat.notna()]
         masked_data = masked_data.dropna(axis=0, thresh=4)
         masked_data = masked_data.set_index("time")
+        masked_data["lat"] = masked_data["lat"].round(decimals=2)
+        masked_data["lon"] = masked_data["lon"].round(decimals=2)
         data = masked_data.to_xarray()
         data = data.set_coords(["lat", "lon"])
 
@@ -621,7 +630,7 @@ def get_sat_file_from_match_filename(filename: str, config: dict):
     fn = fn[match_idx:]
     sat_str = fn[-1].split(".")[0]
 
-    sat_fls = check_for_satellite_data(product=config["satellite_product"])
+    sat_fls = check_for_satellite_data(config=config)
     sat_str = [fl for fl in sat_fls if sat_str in fl][0]
 
     return sat_str

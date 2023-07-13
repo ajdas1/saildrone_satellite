@@ -30,12 +30,12 @@ def great_circle_distance(x) -> float:
     return gc
 
 
-def round_coordinates(data: pd.DataFrame, sig_fig: int = 2, vars: list = ["lat", "lon"]) -> pd.DataFrame:
-    round_factor = 10**sig_fig
-    for var in vars:
-        data[var] = np.round(data[var]*round_factor)/round_factor
+# def round_coordinates(data: pd.DataFrame, sig_fig: int = 2, vars: list = ["lat", "lon"]) -> pd.DataFrame:
+#     round_factor = 10**sig_fig
+#     for var in vars:
+#         data[var] = np.round(data[var]*round_factor)/round_factor
     
-    return data
+#     return data
 
 
 def match_saildrone_satellite_point(match_data: pd.DataFrame, sd_data: pd.DataFrame, st_data: pd.DataFrame, sd_var: str, st_var: str):

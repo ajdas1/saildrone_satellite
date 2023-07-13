@@ -1,7 +1,7 @@
 import pandas as pd
 import sys
 
-from calculations import match_saildrone_satellite_point, round_coordinates
+from calculations import match_saildrone_satellite_point
 from plot import plot_scatterplot_overlap
 from read_write import (
     check_for_saildrone_data,
@@ -38,9 +38,7 @@ saildrone_filename = check_for_saildrone_data(config=config)
 saildrone_data = read_saildrone(
     filename=saildrone_filename, config=config, masked_nan=True, to_pd=True
 )
-saildrone_data = round_coordinates(data=saildrone_data).set_index(
-    ["time", "lat", "lon"]
-)
+saildrone_data = saildrone_data.set_index(["time", "lat", "lon"])
 
 match_data = read_matching_data_from_file(config=config, join_swaths=False)
 
@@ -49,11 +47,8 @@ nearest = []
 mean = []
 for nfl, fl in enumerate(satellite_filenames):
     swath_data = read_swath(filename=fl, config=config, masked_nan=True, as_pd=True)
-    swath_data = round_coordinates(data=swath_data).set_index(["time", "lat", "lon"])
+    swath_data = swath_data.set_index(["time", "lat", "lon"])
     swath_match_data = match_data[nfl]
-    swath_match_data = round_coordinates(
-        data=swath_match_data, vars=["sd_lon", "sd_lat", "st_lon", "st_lat", "dist"]
-    )
 
     tmp = match_saildrone_satellite_point(
         match_data=swath_match_data,
