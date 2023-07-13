@@ -76,11 +76,29 @@ def create_data_folder_structure(config: dict):
     if not os.path.isdir(f"{path}{os.sep}" + f"{config['matching_data_folder']}"):
         os.mkdir(f"{path}{os.sep}" + f"{config['matching_data_folder']}")
 
-    if not os.path.isdir(f"{path}{os.sep}" + f"{config['matching_data_folder']}{os.sep}" + f"SD{config['saildrone_number']}_{config['saildrone_year']}"):
-        os.mkdir(f"{path}{os.sep}" + f"{config['matching_data_folder']}{os.sep}" + f"SD{config['saildrone_number']}_{config['saildrone_year']}")
+    if not os.path.isdir(
+        f"{path}{os.sep}"
+        + f"{config['matching_data_folder']}{os.sep}"
+        + f"SD{config['saildrone_number']}_{config['saildrone_year']}"
+    ):
+        os.mkdir(
+            f"{path}{os.sep}"
+            + f"{config['matching_data_folder']}{os.sep}"
+            + f"SD{config['saildrone_number']}_{config['saildrone_year']}"
+        )
 
-    if not os.path.isdir(f"{path}{os.sep}" + f"{config['matching_data_folder']}{os.sep}" + f"SD{config['saildrone_number']}_{config['saildrone_year']}{os.sep}" + f"{config['satellite_product']}"):
-        os.mkdir(f"{path}{os.sep}" + f"{config['matching_data_folder']}{os.sep}" + f"SD{config['saildrone_number']}_{config['saildrone_year']}{os.sep}" + f"{config['satellite_product']}")
+    if not os.path.isdir(
+        f"{path}{os.sep}"
+        + f"{config['matching_data_folder']}{os.sep}"
+        + f"SD{config['saildrone_number']}_{config['saildrone_year']}{os.sep}"
+        + f"{config['satellite_product']}"
+    ):
+        os.mkdir(
+            f"{path}{os.sep}"
+            + f"{config['matching_data_folder']}{os.sep}"
+            + f"SD{config['saildrone_number']}_{config['saildrone_year']}{os.sep}"
+            + f"{config['satellite_product']}"
+        )
 
     if not os.path.isdir(f"{path}{os.sep}" + f"{config['figure_data_folder']}"):
         os.mkdir(f"{path}{os.sep}" + f"{config['figure_data_folder']}")
@@ -108,7 +126,7 @@ def register_new_dataset(config: dict):
     If the directory already exists, nothing is done.
     """
     path = fetch_repo_path()
-    product = config['satellite_product']
+    product = config["satellite_product"]
 
     if not os.path.isdir(
         f"{path}{os.sep}" + f"{config['satellite_data_folder']}{os.sep}" + f"{product}"
@@ -120,7 +138,9 @@ def register_new_dataset(config: dict):
         )
 
     if not os.path.isdir(
-        f"{path}{os.sep}" + f"{config['matching_data_folder']}{os.sep}" + f"SD{config['saildrone_number']}_{config['saildrone_year']}"
+        f"{path}{os.sep}"
+        + f"{config['matching_data_folder']}{os.sep}"
+        + f"SD{config['saildrone_number']}_{config['saildrone_year']}"
     ):
         os.mkdir(
             f"{path}{os.sep}"
@@ -129,12 +149,16 @@ def register_new_dataset(config: dict):
         )
 
     if not os.path.isdir(
-        f"{path}{os.sep}" + f"{config['matching_data_folder']}{os.sep}" + f"SD{config['saildrone_number']}_{config['saildrone_year']}{os.sep}" + f"{product}"
+        f"{path}{os.sep}"
+        + f"{config['matching_data_folder']}{os.sep}"
+        + f"SD{config['saildrone_number']}_{config['saildrone_year']}{os.sep}"
+        + f"{product}"
     ):
         os.mkdir(
             f"{path}{os.sep}"
             + f"{config['matching_data_folder']}{os.sep}"
-            + f"SD{config['saildrone_number']}_{config['saildrone_year']}{os.sep}" + f"{product}"
+            + f"SD{config['saildrone_number']}_{config['saildrone_year']}{os.sep}"
+            + f"{product}"
         )
 
 
@@ -158,12 +182,11 @@ def check_for_saildrone_data(config: dict, sd_number: int = None, sd_year: int =
         sd_num = sd_number
     else:
         sd_num = config["saildrone_number"]
-    
+
     if sd_year:
         sd_yr = sd_year
     else:
         sd_yr = config["saildrone_year"]
-
 
     files = [
         fl
@@ -174,7 +197,9 @@ def check_for_saildrone_data(config: dict, sd_number: int = None, sd_year: int =
     if len(files) == 1:
         return files[0]
     elif len(files) == 0:
-        print("No saildrone data file. Filename should contain saildrone number and year.")
+        print(
+            "No saildrone data file. Filename should contain saildrone number and year."
+        )
     else:
         print("More than one matching saildrone file.")
 
@@ -261,7 +286,13 @@ def read_not_in_range_log(config: dict) -> list:
     return files
 
 
-def read_saildrone(filename: str, config: dict, masked_nan: bool = False, fill_value: float = 9e36, to_pd: bool = False) -> xr.DataArray:
+def read_saildrone(
+    filename: str,
+    config: dict,
+    masked_nan: bool = False,
+    fill_value: float = 9e36,
+    to_pd: bool = False,
+) -> xr.DataArray:
     """
     data = read_saildrone(filename: str, config, masked_nan: bool, fill_value: float)
 
@@ -327,7 +358,7 @@ def read_saildrone(filename: str, config: dict, masked_nan: bool = False, fill_v
             masked_data["wind_speed"] = np.nan
         if "wind_direction" not in masked_data.columns:
             masked_data["wind_direction"] = np.nan
-        
+
         if ("2021" in filename) and ("1060" in filename):
             masked_data["wind_speed"].iloc[42000:] = np.nan
             masked_data["wind_direction"].iloc[42000:] = np.nan
@@ -347,7 +378,7 @@ def write_to_log(filename: str, config: dict, in_range: bool = True):
 
     Arguments:
     - filenames: list with filenames of swaths
-    - in_range: if True, writes to in_range log, if False, 
+    - in_range: if True, writes to in_range log, if False,
         writes to not_in_range log
 
 
@@ -385,15 +416,20 @@ def write_to_log(filename: str, config: dict, in_range: bool = True):
             + ".txt"
         )
 
-
     with open(log_path, "a") as fl:
         fl.write(filename + "\n")
 
 
-def write_matching_data_to_file(matching_data: pd.DataFrame, matching_file: str, config: dict):
-
+def write_matching_data_to_file(
+    matching_data: pd.DataFrame, matching_file: str, config: dict
+):
     repo_path = fetch_repo_path()
-    matching_data_path = f"{repo_path}{os.sep}" + f"{config['matching_data_folder']}{os.sep}" + f"SD{config['saildrone_number']}_{config['saildrone_year']}{os.sep}" + f"{config['satellite_product']}"
+    matching_data_path = (
+        f"{repo_path}{os.sep}"
+        + f"{config['matching_data_folder']}{os.sep}"
+        + f"SD{config['saildrone_number']}_{config['saildrone_year']}{os.sep}"
+        + f"{config['satellite_product']}"
+    )
 
     if not os.path.isdir(matching_data_path):
         os.mkdir(matching_data_path)
@@ -406,21 +442,28 @@ def write_matching_data_to_file(matching_data: pd.DataFrame, matching_file: str,
 def read_matching_data_from_file(config: dict, join_swaths: bool = False):
     repo_path = fetch_repo_path()
 
-    match_path = f"{repo_path}{os.sep}" + f"{config['matching_data_folder']}{os.sep}" + f"SD{config['saildrone_number']}_{config['saildrone_year']}{os.sep}" + f"{config['satellite_product']}"
+    match_path = (
+        f"{repo_path}{os.sep}"
+        + f"{config['matching_data_folder']}{os.sep}"
+        + f"SD{config['saildrone_number']}_{config['saildrone_year']}{os.sep}"
+        + f"{config['satellite_product']}"
+    )
     match_fls = sorted(os.listdir(match_path))
 
     match_data = []
     for fl in match_fls:
         data = read_matching_data_from_file_product(filename=f"{match_path}/{fl}")
         match_data.append(data)
-    
+
     if join_swaths:
         match_data = pd.concat(match_data)
 
     return match_data
 
 
-def read_swath(filename: str, config: dict, masked_nan: bool = False, as_pd: bool = False) -> xr.DataArray:
+def read_swath(
+    filename: str, config: dict, masked_nan: bool = False, as_pd: bool = False
+) -> xr.DataArray:
     """
     data = read_swath(filename: str, config: dict)
 
@@ -440,11 +483,21 @@ def read_swath(filename: str, config: dict, masked_nan: bool = False, as_pd: boo
     product = config["satellite_product"]
 
     if product == DS.ASCAT_METOPB.value:
-        current_filename = f"{repo_path}{os.sep}" + f"{config['satellite_data_folder']}{os.sep}" + f"{product}{os.sep}" + f"{filename}"
+        current_filename = (
+            f"{repo_path}{os.sep}"
+            + f"{config['satellite_data_folder']}{os.sep}"
+            + f"{product}{os.sep}"
+            + f"{filename}"
+        )
         data = read_ASCAT(filename=current_filename, masked_nan=masked_nan)
-    
+
     if product == DS.SMAP.value:
-        current_filename = f"{repo_path}{os.sep}" + f"{config['satellite_data_folder']}{os.sep}" + f"{product}{os.sep}" + f"{filename}"
+        current_filename = (
+            f"{repo_path}{os.sep}"
+            + f"{config['satellite_data_folder']}{os.sep}"
+            + f"{product}{os.sep}"
+            + f"{filename}"
+        )
         data = read_SMAP(filename=current_filename, masked_nan=masked_nan)
 
     if as_pd:
@@ -490,10 +543,10 @@ def read_ASCAT(filename: str, masked_nan: bool = False) -> xr.DataArray:
         masked_data = masked_data.set_index("time")
         data = masked_data.to_xarray()
         data = data.set_coords(["lat", "lon"])
-    
+
     return data
 
-        
+
 def read_SMAP(filename: str, masked_nan: bool = False) -> xr.DataArray:
     """
     data = read_SMAP(filename: str)
@@ -516,22 +569,30 @@ def read_SMAP(filename: str, masked_nan: bool = False) -> xr.DataArray:
         drop_variables=[
             "solar_flux",
             "rain",
-            "windir", 
+            "windir",
             "tbdw",
-            "tbup", 
+            "tbup",
             "tran",
             "sss_ref",
-            "winspd", 
+            "winspd",
             "fice",
             "gice",
             "fland",
-            "gland", 
+            "gland",
         ],
     )
 
     data = data.set_coords(["time"])
     data.coords["cellon"] = (data.coords["cellon"] + 180) % 360 - 180
-    data = data.rename({"cellat":"lat", "cellon":"lon", "surtep":"sst", "sss_smap":"salinity_70km", "sss_smap_40km":"salinity_40km"})
+    data = data.rename(
+        {
+            "cellat": "lat",
+            "cellon": "lon",
+            "surtep": "sst",
+            "sss_smap": "salinity_70km",
+            "sss_smap_40km": "salinity_40km",
+        }
+    )
     if masked_nan:
         data_df = data.to_dataframe().reset_index(drop=True)
         masked_data = data_df[data_df.lon.notna() & data_df.lat.notna()]
@@ -539,7 +600,6 @@ def read_SMAP(filename: str, masked_nan: bool = False) -> xr.DataArray:
         masked_data = masked_data.set_index("time")
         data = masked_data.to_xarray()
         data = data.set_coords(["lat", "lon"])
-
 
     return data
 
@@ -551,7 +611,6 @@ def get_sd_file_from_match_filename(filename: str, config: dict):
     sd_str = fn[1]
     sd_number = sd_str.split("_")[0][2:]
     sd_year = sd_str.split("_")[1]
-
 
     return check_for_saildrone_data(config=config, sd_number=sd_number, sd_year=sd_year)
 
@@ -572,12 +631,11 @@ def read_matching_data_from_file_product(filename: str):
     data = pd.read_csv(filename)
     data.sd_time = pd.to_datetime(data.sd_time, format="%Y-%m-%d %H:%M:%S")
     data.st_time = pd.to_datetime(data.st_time, format="%Y-%m-%d %H:%M:%S")
-    
+
     return data
 
 
 def sort_log_file(config: dict, in_range: bool = True):
-
     path = fetch_repo_path()
     if in_range:
         log_path = (
@@ -608,7 +666,5 @@ def sort_log_file(config: dict, in_range: bool = True):
     with open(log_path, "w") as file:
         for line in fls:
             file.write(line + "\n")
-    
-    return log_path
-    
 
+    return log_path
