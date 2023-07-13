@@ -169,7 +169,7 @@ for num, fl in enumerate(satellite_filenames):
         swath_points = pd.concat(swath_points).reset_index(drop=True)
         print(f"; min distance: {swath_points.dist.min():.2f} km ")
         write_to_log(filename=fl, config=config, in_range=True)
-        write_matching_data_to_file(matching_data=swath_points, matching_file=fl)
+        write_matching_data_to_file(matching_data=swath_points, matching_file=fl, config=config)
     else:
         write_to_log(filename=fl, config=config, in_range=False)
         print()

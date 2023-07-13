@@ -379,9 +379,8 @@ def write_to_log(filename: str, config: dict, in_range: bool = True):
         fl.write(filename + "\n")
 
 
-def write_matching_data_to_file(matching_data: pd.DataFrame, matching_file: str):
+def write_matching_data_to_file(matching_data: pd.DataFrame, matching_file: str, config: dict):
 
-    config = read_config()
     repo_path = fetch_repo_path()
     matching_data_path = f"{repo_path}{os.sep}" + f"{config['matching_data_folder']}{os.sep}" + f"SD{config['saildrone_number']}_{config['saildrone_year']}{os.sep}" + f"{config['satellite_product']}"
 
