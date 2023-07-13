@@ -62,7 +62,7 @@ for sd_fls in matching_fls:
             data=read_matching_data_from_file_product(filename=fl),
             vars=["sd_lon", "sd_lat", "st_lon", "st_lat", "dist"],
         )
-        sat_filename = get_sat_file_from_match_filename(fl)
+        sat_filename = get_sat_file_from_match_filename(filename=fl, config=config)
         sat_data = round_coordinates(data=read_swath(filename=sat_filename, config=config, masked_nan=True, as_pd=True))
         sat_data = sat_data.set_index(["time", "lat", "lon"])
 

@@ -556,8 +556,7 @@ def get_sd_file_from_match_filename(filename: str, config: dict):
     return check_for_saildrone_data(config=config, sd_number=sd_number, sd_year=sd_year)
 
 
-def get_sat_file_from_match_filename(filename: str):
-    config = read_config()
+def get_sat_file_from_match_filename(filename: str, config: dict):
     fn = filename.split(os.sep)
     match_idx = fn.index(config["matching_data_folder"])
     fn = fn[match_idx:]
