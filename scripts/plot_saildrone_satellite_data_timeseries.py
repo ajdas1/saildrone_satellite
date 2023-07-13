@@ -26,7 +26,7 @@ print(
 saildrone_filename = check_for_saildrone_data(config=config)
 
 
-satellite_filenames = read_in_range_log()
+satellite_filenames = read_in_range_log(config=config)
 if len(satellite_filenames) == 0:
     print(
         "     There are no satellite swaths that match the saildrone \nbased on the specified criteria."

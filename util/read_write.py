@@ -18,7 +18,6 @@ class DS(Enum):
     saildrone = "saildrone"
 
 
-
 def fetch_repo_path():
     """
     fetch_repo_path
@@ -195,15 +194,14 @@ def check_for_satellite_data(config: dict, append_datadir: bool = False) -> list
         return files
 
 
-def read_in_range_log() -> list:
+def read_in_range_log(config: dict) -> list:
     """
-    files = read_in_range_log()
+    files = read_in_range_log(config)
 
     Returns:
     - files: a list of files within that log
     """
 
-    config = read_config()
     repo_path = fetch_repo_path()
     log_path = (
         f"{repo_path}{os.sep}"
