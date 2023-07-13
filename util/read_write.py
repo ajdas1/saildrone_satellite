@@ -393,8 +393,7 @@ def write_matching_data_to_file(matching_data: pd.DataFrame, matching_file: str,
 
 
 
-def read_matching_data_from_file(join_swaths: bool = False):
-    config = read_config()
+def read_matching_data_from_file(config: dict, join_swaths: bool = False):
     repo_path = fetch_repo_path()
 
     match_path = f"{repo_path}{os.sep}" + f"{config['matching_data_folder']}{os.sep}" + f"SD{config['saildrone_number']}_{config['saildrone_year']}{os.sep}" + f"{config['satellite_product']}"

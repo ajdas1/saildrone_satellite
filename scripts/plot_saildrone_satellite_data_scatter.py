@@ -42,7 +42,7 @@ saildrone_data = round_coordinates(data=saildrone_data).set_index(
     ["time", "lat", "lon"]
 )
 
-match_data = read_matching_data_from_file(join_swaths=False)
+match_data = read_matching_data_from_file(config=config, join_swaths=False)
 
 combined = []
 nearest = []
