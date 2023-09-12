@@ -60,6 +60,10 @@ if config["match_saildrone_satellite_swaths"]:
     saildrone_filename = check_for_saildrone_data(config=config)
 
     satellite_filenames = check_for_satellite_data(config=config, append_datadir=False)
+    if len(satellite_filenames) == 0:
+        print("There are no satellite swath files available to process.")
+        sys.exit()
+
     fls_in_range = read_in_range_log(config=config)
     fls_not_in_range = read_not_in_range_log(config=config)
     satellite_filenames = [
@@ -70,121 +74,126 @@ if config["match_saildrone_satellite_swaths"]:
 
     if len(satellite_filenames) == 0:
         print("All the satellite swaths have already been compared to this saildrone. ")
-    else:
-        saildrone_data = read_saildrone(
-            filename=saildrone_filename, config=config, masked_nan=True, to_pd=True
+        sys.exit()
+
+    saildrone_data = read_saildrone(
+        filename=saildrone_filename, config=config, masked_nan=True, to_pd=True
+    )
+    if config["time_range"]["limit"]:
+        saildrone_data = subset_saildrone_time(sd_data=saildrone_data, start_time=config["time_range"]["start_time"], end_time=config["time_range"]["end_time"])
+
+
+
+    filenames = []
+    matching_points = []
+    for num, fl in enumerate(satellite_filenames):
+        start_time = datetime.now()
+        print(f"     {num + 1}/{len(satellite_filenames)}: {fl}", end="")
+        swath_data = read_swath(
+            filename=fl, config=config, masked_nan=True, as_pd=True
         )
+        if len(swath_data) == 0:
+            write_to_log(filename=fl, config=config, in_range=False)
+            print()
+            continue
 
-        filenames = []
-        matching_points = []
-        for num, fl in enumerate(satellite_filenames):
-            start_time = datetime.now()
-            print(f"     {num + 1}/{len(satellite_filenames)}: {fl}", end="")
-            swath_data = read_swath(
-                filename=fl, config=config, masked_nan=True, as_pd=True
-            )
-            if len(swath_data) == 0:
-                write_to_log(filename=fl, config=config, in_range=False)
-                print()
-                continue
+        saildrone_subset = subset_saildrone_time(
+            sd_data=saildrone_data,
+            start_time=swath_data.time.iloc[0],
+            end_time=swath_data.time.iloc[-1],
+        )
+        if len(saildrone_subset) == 0:
+            write_to_log(filename=fl, config=config, in_range=False)
+            print()
+            continue
 
-            saildrone_subset = subset_saildrone_time(
-                sd_data=saildrone_data,
-                start_time=swath_data.time.iloc[0],
-                end_time=swath_data.time.iloc[-1],
-            )
-            if len(saildrone_subset) == 0:
-                write_to_log(filename=fl, config=config, in_range=False)
-                print()
-                continue
+        sd_extrema = get_saildrone_position_extrema(
+            sd_data=saildrone_subset,
+            buffer=config["saildrone_distance_tolerance_km"] / 10,
+        )
+        swath_data = swath_data[
+            (swath_data.lon >= sd_extrema["lonmin"])
+            & (swath_data.lon <= sd_extrema["lonmax"])
+            & (swath_data.lat >= sd_extrema["latmin"])
+            & (swath_data.lat <= sd_extrema["latmax"])
+        ]
+        if len(swath_data) == 0:
+            write_to_log(filename=fl, config=config, in_range=False)
+            print()
+            continue
 
-            sd_extrema = get_saildrone_position_extrema(
+        tmp = swath_data.groupby("time")
+        satellite_patches = [
+            tmp.get_group(group).reset_index(drop=True) for group in tmp.groups
+        ]
+
+        swath_points = []
+        for patch in satellite_patches:
+            patch_time = patch.time.iloc[0]
+            dt = pd.Timedelta(minutes=config["saildrone_time_tolerance_min"])
+            saildrone_patch = subset_saildrone_time(
                 sd_data=saildrone_subset,
-                buffer=config["saildrone_distance_tolerance_km"] / 10,
+                start_time=patch_time - dt,
+                end_time=patch_time + dt,
             )
-            swath_data = swath_data[
-                (swath_data.lon >= sd_extrema["lonmin"])
-                & (swath_data.lon <= sd_extrema["lonmax"])
-                & (swath_data.lat >= sd_extrema["latmin"])
-                & (swath_data.lat <= sd_extrema["latmax"])
-            ]
-            if len(swath_data) == 0:
-                write_to_log(filename=fl, config=config, in_range=False)
-                print()
+
+            if len(saildrone_patch) == 0:
                 continue
 
-            tmp = swath_data.groupby("time")
-            satellite_patches = [
-                tmp.get_group(group).reset_index(drop=True) for group in tmp.groups
-            ]
+            points = pd.DataFrame(
+                [],
+                columns=[
+                    "sd_lon",
+                    "sd_lat",
+                    "sd_time",
+                    "st_lon",
+                    "st_lat",
+                    "st_time",
+                ],
+                index=range(len(saildrone_patch) * len(patch)),
+            )
 
-            swath_points = []
-            for patch in satellite_patches:
-                patch_time = patch.time.iloc[0]
-                dt = pd.Timedelta(minutes=config["saildrone_time_tolerance_min"])
-                saildrone_patch = subset_saildrone_time(
-                    sd_data=saildrone_subset,
-                    start_time=patch_time - dt,
-                    end_time=patch_time + dt,
-                )
+            for sd_point in range(len(saildrone_patch)):
+                lon1 = saildrone_patch.lon.iloc[sd_point]
+                lat1 = saildrone_patch.lat.iloc[sd_point]
+                time1 = saildrone_patch.time.iloc[sd_point]
+                for st_point in range(len(patch)):
+                    lon2 = patch.lon.iloc[st_point]
+                    lat2 = patch.lat.iloc[st_point]
+                    time2 = patch.time.iloc[st_point]
 
-                if len(saildrone_patch) == 0:
-                    continue
+                    points.iloc[sd_point * len(patch) + st_point] = [
+                        lon1,
+                        lat1,
+                        time1,
+                        lon2,
+                        lat2,
+                        time2,
+                    ]
 
-                points = pd.DataFrame(
-                    [],
-                    columns=[
-                        "sd_lon",
-                        "sd_lat",
-                        "sd_time",
-                        "st_lon",
-                        "st_lat",
-                        "st_time",
-                    ],
-                    index=range(len(saildrone_patch) * len(patch)),
-                )
+            points["dist"] = points.apply(great_circle_distance, axis=1)
+            points = points[
+                points.dist <= config["saildrone_distance_tolerance_km"]
+            ].reset_index(drop=True)
+            if len(points) == 0:
+                continue
 
-                for sd_point in range(len(saildrone_patch)):
-                    lon1 = saildrone_patch.lon.iloc[sd_point]
-                    lat1 = saildrone_patch.lat.iloc[sd_point]
-                    time1 = saildrone_patch.time.iloc[sd_point]
-                    for st_point in range(len(patch)):
-                        lon2 = patch.lon.iloc[st_point]
-                        lat2 = patch.lat.iloc[st_point]
-                        time2 = patch.time.iloc[st_point]
+            swath_points.append(points)
 
-                        points.iloc[sd_point * len(patch) + st_point] = [
-                            lon1,
-                            lat1,
-                            time1,
-                            lon2,
-                            lat2,
-                            time2,
-                        ]
+        end_time = datetime.now()
+        dt = (end_time - start_time).total_seconds()
 
-                points["dist"] = points.apply(great_circle_distance, axis=1)
-                points = points[
-                    points.dist <= config["saildrone_distance_tolerance_km"]
-                ].reset_index(drop=True)
-                if len(points) == 0:
-                    continue
-
-                swath_points.append(points)
-
-            end_time = datetime.now()
-            dt = (end_time - start_time).total_seconds()
-
-            if len(swath_points) > 0:
-                print(f" ({dt:.2f} sec)", end="")
-                swath_points = pd.concat(swath_points).reset_index(drop=True)
-                print(f"; min distance: {swath_points.dist.min():.2f} km ")
-                write_to_log(filename=fl, config=config, in_range=True)
-                write_matching_data_to_file(
-                    matching_data=swath_points, matching_file=fl, config=config
-                )
-            else:
-                write_to_log(filename=fl, config=config, in_range=False)
-                print()
+        if len(swath_points) > 0:
+            print(f" ({dt:.2f} sec)", end="")
+            swath_points = pd.concat(swath_points).reset_index(drop=True)
+            print(f"; min distance: {swath_points.dist.min():.2f} km ")
+            write_to_log(filename=fl, config=config, in_range=True)
+            write_matching_data_to_file(
+                matching_data=swath_points, matching_file=fl, config=config
+            )
+        else:
+            write_to_log(filename=fl, config=config, in_range=False)
+            print()
 
         # _ = sort_log_file(config=config, in_range=True)
         # _ = sort_log_file(config=config, in_range=False)
@@ -215,6 +224,7 @@ if config["plot_saildrone_satellite_data_timeseries"]:
         f"SD{config['saildrone_number']}."
         + f"{config['saildrone_year']}_"
         + f"{config['satellite_product']}_timeseries_overlap_"
+        + f"{config['saildrone_time_tolerance_min']}min_{config['saildrone_distance_tolerance_km']}km_"
         + f"{config['saildrone_variable_name']}.png"
     )
     plot_timeseries_swath_overlap(
@@ -280,6 +290,7 @@ if config["plot_saildrone_satellite_data_scatter"]:
             f"SD{config['saildrone_number']}."
             + f"{config['saildrone_year']}_"
             + f"{config['satellite_product']}_scatter_overlap_"
+            + f"{config['saildrone_time_tolerance_min']}min_{config['saildrone_distance_tolerance_km']}km_"
             + f"{config['saildrone_variable_name']}.png"
         )
         plot_scatterplot_overlap(
@@ -298,17 +309,18 @@ if config["plot_all_saildrones_scatter"]:
 
     sd_dirs = sorted(
         [
-            f"{fetch_repo_path()}/{config['matching_data_folder']}/{fl}"
+            f"{fetch_repo_path()}{os.sep}{config['matching_data_folder']}{os.sep}{fl}"
             for fl in os.listdir(
-                f"{fetch_repo_path()}/{config['matching_data_folder']}"
+                f"{fetch_repo_path()}{os.sep}{config['matching_data_folder']}"
             )
         ]
     )
 
+    current_thresh = f"{config['satellite_product']}{os.sep}" + f"{config['saildrone_time_tolerance_min']}min_{config['saildrone_distance_tolerance_km']}km"
     matching_fls = [
         [
-            f"{sdir}/{config['satellite_product']}/{fl}"
-            for fl in os.listdir(f"{sdir}/{config['satellite_product']}")
+            f"{sdir}{os.sep}{current_thresh}{os.sep}{fl}"
+            for fl in os.listdir(f"{sdir}{os.sep}{current_thresh}")
         ]
         for sdir in sd_dirs
     ]
@@ -372,6 +384,7 @@ if config["plot_all_saildrones_scatter"]:
     filename = (
         f"SD_"
         + f"{config['satellite_product']}_scatter_overlap_"
+        + f"{config['saildrone_time_tolerance_min']}min_{config['saildrone_distance_tolerance_km']}km_"
         + f"{config['saildrone_variable_name']}.png"
     )
     plot_scatterplot_overlap(
@@ -384,6 +397,7 @@ if config["plot_all_saildrones_scatter"]:
     filename = (
         f"SD_"
         + f"{config['satellite_product']}_matching_points_locations_"
+        + f"{config['saildrone_time_tolerance_min']}min_{config['saildrone_distance_tolerance_km']}km_"
         + f"{config['saildrone_variable_name']}.png"
     )
     title = f"(SD - {config['satellite_product']}) matching point locations"

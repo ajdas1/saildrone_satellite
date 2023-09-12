@@ -14,6 +14,7 @@ class DS(Enum):
     """
 
     ASCAT_METOPB = "ASCAT_METOPB"
+    ASCAT = "ASCAT"
     SMAP = "SMAP"
     saildrone = "saildrone"
 
@@ -161,6 +162,21 @@ def register_new_dataset(config: dict):
             + f"{product}"
         )
 
+    if not os.path.isdir(
+        f"{path}{os.sep}"
+        + f"{config['matching_data_folder']}{os.sep}"
+        + f"SD{config['saildrone_number']}_{config['saildrone_year']}{os.sep}"
+        + f"{product}{os.sep}"
+        + f"{config['saildrone_time_tolerance_min']}min_{config['saildrone_distance_tolerance_km']}km"
+    ):
+        os.mkdir(
+        f"{path}{os.sep}"
+        + f"{config['matching_data_folder']}{os.sep}"
+        + f"SD{config['saildrone_number']}_{config['saildrone_year']}{os.sep}"
+        + f"{product}{os.sep}"
+        + f"{config['saildrone_time_tolerance_min']}min_{config['saildrone_distance_tolerance_km']}km"
+        )
+
 
 def check_for_saildrone_data(config: dict, sd_number: str = None, sd_year: str = None):
     """
@@ -230,7 +246,7 @@ def check_for_satellite_data(config: dict, append_datadir: bool = False) -> list
         return files
 
 
-def read_in_range_log(config: dict) -> list:
+def read_in_range_log(config: dict, filename: str = None) -> list:
     """
     files = read_in_range_log(config)
 
@@ -238,17 +254,20 @@ def read_in_range_log(config: dict) -> list:
     - files: a list of files within that log
     """
 
-    repo_path = fetch_repo_path()
-    log_path = (
-        f"{repo_path}{os.sep}"
-        + f"{config['log_data_folder']}{os.sep}"
-        + f"saildrone_{config['saildrone_number']}_"
-        + f"{config['saildrone_year']}_"
-        + f"{config['satellite_product']}_swath_in_range_"
-        + f"{config['saildrone_time_tolerance_min']}min_"
-        + f"{config['saildrone_distance_tolerance_km']}km"
-        + ".txt"
-    )
+    if filename is not None:
+        log_path = filename
+    else:
+        repo_path = fetch_repo_path()
+        log_path = (
+            f"{repo_path}{os.sep}"
+            + f"{config['log_data_folder']}{os.sep}"
+            + f"saildrone_{config['saildrone_number']}_"
+            + f"{config['saildrone_year']}_"
+            + f"{config['satellite_product']}_swath_in_range_"
+            + f"{config['saildrone_time_tolerance_min']}min_"
+            + f"{config['saildrone_distance_tolerance_km']}km"
+            + ".txt"
+        )
 
     try:
         with open(log_path, "r") as fl:
@@ -432,7 +451,8 @@ def write_matching_data_to_file(
         f"{repo_path}{os.sep}"
         + f"{config['matching_data_folder']}{os.sep}"
         + f"SD{config['saildrone_number']}_{config['saildrone_year']}{os.sep}"
-        + f"{config['satellite_product']}"
+        + f"{config['satellite_product']}{os.sep}"
+        + f"{config['saildrone_time_tolerance_min']}min_{config['saildrone_distance_tolerance_km']}km"
     )
 
     if not os.path.isdir(matching_data_path):
@@ -450,7 +470,8 @@ def read_matching_data_from_file(config: dict, join_swaths: bool = False):
         f"{repo_path}{os.sep}"
         + f"{config['matching_data_folder']}{os.sep}"
         + f"SD{config['saildrone_number']}_{config['saildrone_year']}{os.sep}"
-        + f"{config['satellite_product']}"
+        + f"{config['satellite_product']}{os.sep}"
+        + f"{config['saildrone_time_tolerance_min']}min_{config['saildrone_distance_tolerance_km']}km"
     )
     match_fls = sorted(os.listdir(match_path))
 
@@ -486,7 +507,7 @@ def read_swath(
     repo_path = fetch_repo_path()
     product = config["satellite_product"]
 
-    if product == DS.ASCAT_METOPB.value:
+    if product == DS.ASCAT_METOPB.value or product == DS.ASCAT.value:
         current_filename = (
             f"{repo_path}{os.sep}"
             + f"{config['satellite_data_folder']}{os.sep}"
